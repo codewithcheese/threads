@@ -6,8 +6,6 @@
 
   let { data } = $props();
 
-  $inspect(data);
-
   let content = $state("");
 
   async function handleSubmit(value: string) {
@@ -19,7 +17,7 @@
 </script>
 
 <div class="container mx-auto max-w-7xl px-4">
-  <h1>{data.page.name}</h1>
+  <h1>Recent</h1>
   <Editor bind:content onSubmit={handleSubmit} />
   {#each data.notes as note (note.id)}
     <NoteItem {note} />

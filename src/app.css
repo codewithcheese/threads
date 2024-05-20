@@ -98,3 +98,7 @@
 button svg {
   pointer-events: none;
 }
+
+h1 {
+  @apply text-3xl ;
+}
