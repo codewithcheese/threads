@@ -14,10 +14,22 @@
     Prec.highest(
       keymap.of([
         {
-          key: "Ctrl-Enter",
-          run: () => {
-            onSubmit(content);
+          key: "Enter",
+          run: (view) => {
+            // use view state to get the current content, since cannot rely on
+            // the content binding to be updated before enter is pressed
+            const value = view.state.doc.toString();
+            if (value.length === 0) {
+              return false;
+            }
+            onSubmit(value);
             return true;
+          },
+        },
+        {
+          key: "Shift-Enter",
+          run: () => {
+            return false;
           },
         },
       ]),

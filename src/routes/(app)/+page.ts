@@ -1,4 +1,4 @@
-import { registerModel, useDb } from "$database";
+import { registerModel, runMigrations, useDb } from "$database";
 import { noteTable } from "$database/schema";
 import { desc } from "drizzle-orm";
 

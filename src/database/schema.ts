@@ -1,4 +1,4 @@
-import { primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm/sql";
 import { type InferSelectModel, relations } from "drizzle-orm";
 
@@ -9,6 +9,7 @@ import { type InferSelectModel, relations } from "drizzle-orm";
 export const pageTable = sqliteTable("pages", {
   id: text("id").primaryKey(),
   name: text("name").notNull().unique(),
+  slug: text("slug").notNull().unique(),
   createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updatedAt").default(sql`(CURRENT_TIMESTAMP)`),
 });
@@ -20,13 +21,23 @@ export const noteTable = sqliteTable("notes", {
   updatedAt: text("updatedAt").default(sql`(CURRENT_TIMESTAMP)`),
 });
 
-export const notePagesTable = sqliteTable("notePages", {
-  noteId: text("noteId").notNull().references(() => noteTable.id),
-  pageId: text("pageId").notNull().references(() => pageTable.id),
-  createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
-},  (t) => ({
-  pk: primaryKey({ columns: [t.noteId, t.pageId] }),
-}));
+export const notePagesTable = sqliteTable(
+  "notePages",
+  {
+    noteId: text("noteId")
+      .notNull()
+      .references(() => noteTable.id),
+    pageId: text("pageId")
+      .notNull()
+      .references(() => pageTable.id),
+    pageSlug: text("pageSlug").notNull(),
+    createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.noteId, t.pageId] }),
+    pageSlugIndex: index("pageSlugIndex").on(t.pageSlug),
+  }),
+);
 
 /**
  * Types

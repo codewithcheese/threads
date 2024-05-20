@@ -1,10 +1,12 @@
 <script lang="ts">
-  import NoteItem from "./NoteItem.svelte";
-  import Editor from "./Editor.svelte";
-  import { submitNote } from "./$data";
+  import NoteItem from "../NoteItem.svelte";
+  import Editor from "../Editor.svelte";
+  import { submitNote } from "../$data";
   import { invalidate } from "$app/navigation";
 
   let { data } = $props();
+
+  $inspect(data);
 
   let content = $state("");
 

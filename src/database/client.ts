@@ -14,7 +14,13 @@ export function useDb() {
   return db;
 }
 
+export function setDb(newDb: any) {
+  db = newDb;
+}
+
 export function useDbFile() {
-  const { getDatabaseFile, overwriteDatabaseFile } = new SQLocalDrizzle(SQLITE_FILENAME);
+  const { getDatabaseFile, overwriteDatabaseFile } = new SQLocalDrizzle(
+    SQLITE_FILENAME,
+  );
   return { getDatabaseFile, overwriteDatabaseFile };
 }
