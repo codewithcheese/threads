@@ -2,8 +2,8 @@
 
 ## TODO
 
-- [ ] Create linked pages on submit
-- [ ] Link pages in note content
+- [x] Create linked pages on submit
+- [x] Link pages in note content
 
 
 ## UX Choices
@@ -23,5 +23,5 @@ but require formatting for longer page names
 
 **Slug**
 
-Slug is a unique identifier for a page that can be used in URLs. It is generated from the page name. It should be possible to calculate the slug without the database. Could use URL encoding, this 
+Slug is a unique identifier for a page that can be used in URLs. It is generated from the page name. It should be possible to calculate the slug without the database. 
 

@@ -1,7 +1,13 @@
-import { index, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+  index,
+  int,
+  primaryKey,
+  sqliteTable,
+  text,
+} from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm/sql";
 import { type InferSelectModel, relations } from "drizzle-orm";
-
+import { type Message } from "ai";
 /**
  * Tables
  */
@@ -39,12 +45,60 @@ export const notePagesTable = sqliteTable(
   }),
 );
 
+export type ChatbotMessage = {
+  role: "user" | "assistant" | "system";
+  content: string;
+};
+
+export const chatbotTable = sqliteTable("chatbot", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description").notNull().default(""),
+  messages: text("messages", { mode: "json" })
+    .notNull()
+    .$type<ChatbotMessage[]>()
+    .default([]),
+  createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text("updatedAt").default(sql`(CURRENT_TIMESTAMP)`),
+});
+
+export const chatTable = sqliteTable("chat", {
+  id: text("id").primaryKey(),
+  createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text("updatedAt").default(sql`(CURRENT_TIMESTAMP)`),
+});
+
+export const chatMessageTable = sqliteTable(
+  "chatMessage",
+  {
+    id: text("id").notNull(),
+    chatId: text("chatId")
+      .notNull()
+      .references(() => chatTable.id),
+    sender: text("sender"),
+    recipients: text("recipients", { mode: "json" })
+      .$type<string[]>()
+      .default([]),
+    role: text("role").notNull(),
+    content: text("content"),
+    data: text("data", { mode: "json" }),
+    createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
+    updatedAt: text("updatedAt").default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.id, t.chatId] }),
+  }),
+);
+
 /**
  * Types
  */
 
 export type Page = InferSelectModel<typeof pageTable>;
 export type Note = InferSelectModel<typeof noteTable>;
+export type Chatbot = InferSelectModel<typeof chatbotTable>;
+export type Chat = InferSelectModel<typeof chatTable>;
+export type ChatMessage = InferSelectModel<typeof chatMessageTable>;
 
 /**
  * Relationships
@@ -66,5 +120,16 @@ export const notePagesRelations = relations(notePagesTable, ({ one }) => ({
   note: one(noteTable, {
     fields: [notePagesTable.noteId],
     references: [noteTable.id],
+  }),
+}));
+
+export const chatRelations = relations(chatTable, ({ many }) => ({
+  chatMessages: many(chatMessageTable),
+}));
+
+export const chatMessageRelations = relations(chatMessageTable, ({ one }) => ({
+  chat: one(chatTable, {
+    fields: [chatMessageTable.chatId],
+    references: [chatTable.id],
   }),
 }));

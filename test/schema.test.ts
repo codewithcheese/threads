@@ -1,6 +1,6 @@
 /* @vitest-environment node */
 
-import { describe, it } from "vitest";
+import { it } from "vitest";
 import { submitNote } from "../src/routes/(app)/$data";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
