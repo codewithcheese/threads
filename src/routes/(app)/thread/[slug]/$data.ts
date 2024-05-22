@@ -1,5 +1,10 @@
 import { invalidateModel, useDb } from "$database";
-import { notePagesTable, noteTable, pageTable } from "$database/schema";
+import {
+  chatTable,
+  notePagesTable,
+  noteTable,
+  pageTable,
+} from "$database/schema";
 import { nanoid } from "nanoid";
 import { eq } from "drizzle-orm";
 import { sql } from "drizzle-orm/sql";
@@ -56,4 +61,10 @@ export async function updateNote(id: string, content: string) {
     .set({ content, updatedAt: sql`(CURRENT_TIMESTAMP)` })
     .where(eq(noteTable.id, id));
   await invalidateModel(noteTable, { id });
+}
+
+export async function createChat(pageSlug: string) {
+  const id = nanoid(10);
+  await useDb().insert(chatTable).values({ id, pageSlug });
+  return id;
 }

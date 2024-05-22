@@ -29,6 +29,13 @@
       "when": 1716272147848,
       "tag": "0003_elite_betty_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1716358466740,
+      "tag": "0004_many_manta",
+      "breakpoints": true
     }
   ]
 }

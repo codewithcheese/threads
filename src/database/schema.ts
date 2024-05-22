@@ -64,6 +64,7 @@ export const chatbotTable = sqliteTable("chatbot", {
 
 export const chatTable = sqliteTable("chat", {
   id: text("id").primaryKey(),
+  pageSlug: text("pageSlug").notNull(),
   createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updatedAt").default(sql`(CURRENT_TIMESTAMP)`),
 });
