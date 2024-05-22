@@ -1,13 +1,18 @@
 <script lang="ts">
   import type { Note } from "$database/schema";
-  import { EllipsisVerticalIcon, XIcon } from "lucide-svelte";
+  import { XIcon } from "lucide-svelte";
   import { deleteNote, updateNote } from "./$data";
   import Editor from "./Editor.svelte";
   import { slugify } from "$lib/slugify";
 
-  let { note }: { note: Note } = $props();
+  let {
+    note,
+    focused,
+    onFocus,
+  }: { note: Note; focused: boolean; onFocus: () => void } = $props();
 
-  let editing = $state(false);
+  let editing = true;
+
   let content = $state(note.content);
   $effect(() => {
     content = note.content;
@@ -18,7 +23,8 @@
   function parseContent(content: string) {
     return content.replace(
       /\[\[([^\]]+)]]/g,
-      (_, text) => `<a class="page-link" href="/${slugify(text)}">${text}</a>`,
+      (_, text) =>
+        `<a class="page-link" href="/thread/${slugify(text)}">${text}</a>`,
     );
   }
 
@@ -27,19 +33,19 @@
   }
 
   function handleClick() {
-    if (!editing) {
-      editing = true;
-    }
+    onFocus();
   }
 
   async function handleSubmit(value: string) {
     await updateNote(note.id, value);
-    editing = false;
+    // editing = false;
   }
 </script>
 
-<div class="group flex flex-row items-center gap-1">
-  <div class="cursor-pointer text-gray-700 opacity-0 group-hover:opacity-100">
+<div class="group flex flex-row items-center gap-1 py-1">
+  <div
+    class="absolute -ml-8 cursor-pointer pr-4 text-gray-500 opacity-0 group-hover:opacity-100"
+  >
     <XIcon onclick={handleDelete} size={16} />
   </div>
   <div class="w-full" onclick={handleClick}>

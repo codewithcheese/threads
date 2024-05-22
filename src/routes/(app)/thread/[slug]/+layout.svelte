@@ -1,14 +1,13 @@
 <script lang="ts">
   import NoteItem from "../NoteItem.svelte";
   import Editor from "../Editor.svelte";
-  import { submitNote } from "../$data";
   import { invalidate } from "$app/navigation";
+  import { submitNote } from "../$data.js";
 
   let { data } = $props();
 
-  $inspect(data);
-
   let content = $state("");
+  let focusIndex: number = $state(-1);
 
   async function handleSubmit(value: string) {
     console.log("submitting", value);
@@ -18,13 +17,24 @@
   }
 </script>
 
-<div class="container mx-auto max-w-7xl px-4">
-  <h1>{data.page.name}</h1>
+<div class="mx-auto mt-10 grid max-w-[59rem] flex-1 auto-rows-max">
+  <h1
+    class="mb-6 flex-1 shrink-0 whitespace-nowrap text-3xl font-semibold tracking-tight sm:grow-0"
+  >
+    {data.pageName}
+  </h1>
+
   <Editor bind:content onSubmit={handleSubmit} />
-  {#each data.notes as note (note.id)}
-    <NoteItem {note} />
+
+  {#each data.notes as note, index (note.id)}
+    <NoteItem
+      onFocus={() => (focusIndex = index)}
+      focused={focusIndex === index}
+      {note}
+    />
   {/each}
 </div>
+<slot />
 
 <style lang="postcss">
   :global(html) {

@@ -77,6 +77,10 @@
   }
 }
 
+html, body, #root {
+  @apply h-full;
+}
+
 
 .loading-icon {
   animation: spin 1s linear infinite;
@@ -99,6 +103,6 @@ button svg {
   pointer-events: none;
 }
 
-h1 {
-  @apply text-3xl ;
+.cm-gutters {
+  @apply hidden
 }

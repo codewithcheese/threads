@@ -4,6 +4,10 @@
 
 - [x] Create linked pages on submit
 - [x] Link pages in note content
+- [x] Chatbot and chat schema
+- [ ] Start a chat
+- [ ] Positive and negative filter a thread by adding slugs
+- [ ] Add URLs, tweets, videos to notes
 
 
 ## UX Choices
