@@ -1,7 +1,6 @@
 import { invalidateModel, useDb } from "$database";
 import { notePagesTable, noteTable, pageTable } from "$database/schema";
 import { nanoid } from "nanoid";
-import { invalidate } from "$app/navigation";
 import { eq } from "drizzle-orm";
 import { sql } from "drizzle-orm/sql";
 import { slugify } from "$lib/slugify";

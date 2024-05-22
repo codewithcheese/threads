@@ -1,8 +1,8 @@
 <script lang="ts">
-  import NoteItem from "../NoteItem.svelte";
-  import Editor from "../Editor.svelte";
+  import NoteItem from "./NoteItem.svelte";
+  import Editor from "./Editor.svelte";
   import { invalidate } from "$app/navigation";
-  import { submitNote } from "../$data.js";
+  import { submitNote } from "./$data.js";
 
   let { data } = $props();
 
@@ -24,7 +24,9 @@
     {data.pageName}
   </h1>
 
-  <Editor bind:content onSubmit={handleSubmit} />
+  <div class="py-1">
+    <Editor bind:content onSubmit={handleSubmit} />
+  </div>
 
   {#each data.notes as note, index (note.id)}
     <NoteItem
