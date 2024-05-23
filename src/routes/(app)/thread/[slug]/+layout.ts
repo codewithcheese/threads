@@ -1,6 +1,6 @@
 import { registerModel, useDb } from "$database";
 import { notePagesTable, noteTable, pageTable } from "$database/schema";
-import { desc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { error } from "@sveltejs/kit";
 
 export async function load({ params, depends }) {
@@ -14,7 +14,7 @@ export async function load({ params, depends }) {
           },
         },
       },
-      orderBy: desc(noteTable.createdAt),
+      orderBy: asc(noteTable.createdAt),
     });
     depends(`view:notes`);
     registerModel(noteTable, notes, depends);

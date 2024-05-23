@@ -34,12 +34,14 @@
   import { lintKeymap } from "@codemirror/lint";
 
   let {
-    placeholder = "What's on your mind?",
     content = $bindable(""),
+    placeholder = "What's on your mind?",
+    resetOnSubmit = false,
     onSubmit,
   }: {
-    placeholder?: string;
     content: string;
+    placeholder?: string;
+    resetOnSubmit?: boolean;
     onSubmit: (value: string) => void;
   } = $props();
 
@@ -85,6 +87,15 @@
               return false;
             }
             onSubmit(value);
+            if (resetOnSubmit) {
+              view.dispatch({
+                changes: {
+                  from: 0,
+                  to: view.state.doc.length,
+                  insert: "",
+                },
+              });
+            }
             return true;
           },
         },
