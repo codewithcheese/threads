@@ -32,6 +32,7 @@
     completionKeymap,
   } from "@codemirror/autocomplete";
   import { lintKeymap } from "@codemirror/lint";
+  import { customDeleteKeymap, linkWidget } from "$lib/editor";
 
   let {
     content = $bindable(""),
@@ -75,6 +76,7 @@
   ])();
 
   const extensions = [
+    Prec.highest(customDeleteKeymap),
     Prec.highest(
       keymap.of([
         {
@@ -113,6 +115,7 @@
       codeLanguages: languages,
     }),
     basicSetup,
+    linkWidget,
   ];
 </script>
 

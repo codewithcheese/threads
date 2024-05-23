@@ -51,7 +51,10 @@ export async function submitNote(content: string) {
 }
 
 export async function deleteNote(id: string) {
-  await useDb().delete(noteTable).where(eq(noteTable.id, id));
+  await useDb().transaction(async (tx) => {
+    await useDb().delete(noteTable).where(eq(noteTable.id, id));
+    await tx.delete(notePagesTable).where(eq(notePagesTable.noteId, id));
+  });
   await invalidateModel(noteTable, { id });
 }
 

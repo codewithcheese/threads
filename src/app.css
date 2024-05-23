@@ -106,3 +106,11 @@ button svg {
 .cm-gutters {
   @apply hidden
 }
+
+/**
+ * Document link widget
+ */
+
+.link-widget {
+  @apply text-blue-500 underline cursor-pointer;
+}

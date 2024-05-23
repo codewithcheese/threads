@@ -42,7 +42,7 @@
   }
 </script>
 
-<div class="group flex flex-row items-center gap-1 py-1">
+<div class="group flex flex-row items-center">
   <div
     class="-ml-8 cursor-pointer pr-4 text-gray-500 opacity-0 group-hover:opacity-100"
   >
