@@ -3,17 +3,12 @@
   import type { Chatbot } from "$database/schema";
   import ChatbotForm from "../ChatbotForm.svelte";
   import toast from "svelte-french-toast";
-  import { insertChatbot } from "../$data";
+  import { blankChatbot, insertChatbot } from "../$data";
   import { goto } from "$app/navigation";
+  import { Card, CardHeader, CardTitle } from "$components/ui/card";
+  import { CardContent } from "$components/ui/card/index.js";
 
-  const chatbot: Chatbot = {
-    id: nanoid(10),
-    name: "",
-    description: "",
-    messages: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+  let chatbot: Chatbot = $state(blankChatbot());
 
   async function handleSubmit(chatbot: Chatbot) {
     try {
@@ -24,10 +19,17 @@
       );
     }
     toast.success("Chatbot created");
-    await goto("/chatbot/list");
+    await goto("/settings/chatbots");
   }
 </script>
 
-<div class="p-4">
-  <ChatbotForm {chatbot} onSubmit={handleSubmit} />
+<div class="grid gap-6">
+  <Card>
+    <CardHeader>
+      <CardTitle>Create chatbot</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <ChatbotForm bind:chatbot onSubmit={handleSubmit} />
+    </CardContent>
+  </Card>
 </div>

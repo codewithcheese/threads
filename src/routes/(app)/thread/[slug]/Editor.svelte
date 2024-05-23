@@ -32,7 +32,7 @@
     completionKeymap,
   } from "@codemirror/autocomplete";
   import { lintKeymap } from "@codemirror/lint";
-  import { customDeleteKeymap, linkWidget } from "$lib/editor";
+  import { linkWidget } from "$lib/editor";
 
   let {
     content = $bindable(""),
@@ -45,6 +45,8 @@
     resetOnSubmit?: boolean;
     onSubmit: (value: string) => void;
   } = $props();
+
+  let editor: EditorView;
 
   export const basicSetup: Extension = (() => [
     // lineNumbers(),
@@ -76,7 +78,6 @@
   ])();
 
   const extensions = [
-    Prec.highest(customDeleteKeymap),
     Prec.highest(
       keymap.of([
         {

@@ -8,6 +8,7 @@ import {
 import { sql } from "drizzle-orm/sql";
 import { type InferSelectModel, relations } from "drizzle-orm";
 import { type Message } from "ai";
+import { unique } from "drizzle-orm/pg-core";
 /**
  * Tables
  */
@@ -45,6 +46,38 @@ export const notePagesTable = sqliteTable(
   }),
 );
 
+/**
+ * Models
+ */
+
+export const modelTable = sqliteTable(
+  "model",
+  {
+    id: text("id").notNull().primaryKey(),
+    accountId: text("accountId")
+      .notNull()
+      .references(() => accountTable.id),
+    name: text("name").notNull(),
+    visible: int("visible").notNull(),
+    createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    accountIdIndex: index("accountIdIndex").on(table.accountId),
+  }),
+);
+
+export const accountTable = sqliteTable("account", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  serviceId: text("serviceId").notNull(),
+  baseURL: text("baseURL").notNull(),
+  apiKey: text("apiKey").notNull(),
+  createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
+});
+/**
+ * Chatbot
+ */
+
 export type ChatbotMessage = {
   role: "user" | "assistant" | "system";
   content: string;
@@ -54,6 +87,7 @@ export const chatbotTable = sqliteTable("chatbot", {
   id: text("id").primaryKey(),
   name: text("name").notNull().unique(),
   description: text("description").notNull().default(""),
+  defaultModelId: text("defaultModelId").references(() => modelTable.id),
   messages: text("messages", { mode: "json" })
     .notNull()
     .$type<ChatbotMessage[]>()

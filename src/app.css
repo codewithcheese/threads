@@ -111,6 +111,6 @@ button svg {
  * Document link widget
  */
 
-.link-widget {
+.link-widget a {
   @apply text-blue-500 underline cursor-pointer;
 }

@@ -33,10 +33,8 @@ class DocumentLinkWidget extends WidgetType {
   toDOM() {
     const span = document.createElement("span");
     span.className = "link-widget";
-    span.innerText = this.name;
-    span.onclick = () => {
-      goto(`/thread/${slugify(this.name)}`);
-    };
+    span.setAttribute("data-sveltekit-preload-data", "false");
+    span.innerHTML = `<a href="/thread/${slugify(this.name)}">${this.name}</a>`;
     return span;
   }
 }
@@ -68,7 +66,7 @@ export const linkWidget = ViewPlugin.fromClass(
     }
     destroy() {}
     update(update: ViewUpdate) {
-      if (update.docChanged) {
+      if (update.docChanged || update.selectionSet) {
         this.buildDecorations(update.state);
       }
     }
@@ -78,43 +76,31 @@ export const linkWidget = ViewPlugin.fromClass(
       const re = linkRegex;
       let match: RegExpExecArray | null;
       const docStr = state.doc.toString();
+      const cursor = state.selection.main.head;
+
       while ((match = re.exec(docStr)) !== null) {
         const start = match.index;
         const end = start + match[0].length + 2;
         const name = match[0].slice(2);
-        builder.add(
-          start,
-          end,
-          Decoration.replace({
-            widget: new DocumentLinkWidget(name),
-            inclusive: true,
-            block: false,
-            handleKeyDown: (view: EditorView, event: KeyboardEvent) => {
-              console.log("handleKeyDown", event);
-              if (event.key === "Backspace" || event.key === "Delete") {
-                const { from, to } = view.state.selection.main;
-                if (from === to && from === start) {
-                  view.dispatch({
-                    changes: { from: start, to: end },
-                  });
-                  return true;
-                }
-              }
-              return false;
-            },
-          }),
-        );
+        const isInsideRange = cursor >= start && cursor <= end;
+        if (!isInsideRange) {
+          builder.add(
+            start,
+            end,
+            Decoration.replace({
+              widget: new DocumentLinkWidget(name),
+              inclusive: true,
+              block: false,
+              editing: true,
+            }),
+          );
+        }
       }
       this.decorations = builder.finish();
     }
   },
   {
     decorations: (v) => v.decorations,
-    provide: (plugin) =>
-      EditorView.atomicRanges.of((view) => {
-        const instance = view.plugin(plugin);
-        return instance ? instance.decorations : RangeSet.empty;
-      }),
   },
 );
 
