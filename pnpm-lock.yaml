@@ -56,6 +56,9 @@ dependencies:
   clsx:
     specifier: ^2.1.1
     version: 2.1.1
+  cmdk-sv:
+    specifier: ^0.0.17
+    version: 0.0.17(svelte@5.0.0-next.123)
   drizzle-orm:
     specifier: ^0.30.10
     version: 0.30.10(@cloudflare/workers-types@4.20240502.0)(@types/better-sqlite3@7.6.10)(better-sqlite3@10.0.0)(react@18.3.1)
@@ -65,6 +68,33 @@ dependencies:
   nanoid:
     specifier: ^5.0.7
     version: 5.0.7
+  prosemirror-autocomplete:
+    specifier: ^0.4.3
+    version: 0.4.3
+  prosemirror-commands:
+    specifier: ^1.5.2
+    version: 1.5.2
+  prosemirror-history:
+    specifier: ^1.4.0
+    version: 1.4.0
+  prosemirror-keymap:
+    specifier: ^1.2.2
+    version: 1.2.2
+  prosemirror-model:
+    specifier: ^1.21.0
+    version: 1.21.0
+  prosemirror-schema-basic:
+    specifier: ^1.2.2
+    version: 1.2.2
+  prosemirror-state:
+    specifier: ^1.4.3
+    version: 1.4.3
+  prosemirror-transform:
+    specifier: ^1.9.0
+    version: 1.9.0
+  prosemirror-view:
+    specifier: ^1.33.6
+    version: 1.33.6
   sqlocal:
     specifier: ^0.9.0
     version: 0.9.0(drizzle-orm@0.30.10)
@@ -1671,6 +1701,20 @@ packages:
       svelte: 5.0.0-next.123
     dev: true
 
+  /@melt-ui/svelte@0.61.2(svelte@5.0.0-next.123):
+    resolution: {integrity: sha512-BHkD9G31zQBToA4euDRBgTQRvWxT9scufOVCXgDO6HKTvyxFspbWT2bgiSFqAK4BbAGDn9Ao36Q8F9O71KN4OQ==}
+    peerDependencies:
+      svelte: '>=3 <5'
+    dependencies:
+      '@floating-ui/core': 1.6.1
+      '@floating-ui/dom': 1.6.4
+      '@internationalized/date': 3.5.3
+      dequal: 2.0.3
+      focus-trap: 7.5.4
+      nanoid: 4.0.2
+      svelte: 5.0.0-next.123
+    dev: false
+
   /@melt-ui/svelte@0.76.2(svelte@5.0.0-next.123):
     resolution: {integrity: sha512-7SbOa11tXUS95T3fReL+dwDs5FyJtCEqrqG3inRziDws346SYLsxOQ6HmX+4BkIsQh1R8U3XNa+EMmdMt38lMA==}
     peerDependencies:
@@ -2295,6 +2339,16 @@ packages:
       svelte: 5.0.0-next.123
     dev: false
 
+  /bits-ui@0.9.9(svelte@5.0.0-next.123):
+    resolution: {integrity: sha512-LkdkyTtpXdkjBzPZJVJgpcre4fut6DONoprMfadHFo82HNUhph+02CxDjYEcZcThb5z4YjSxMlCYvQPZm+YtfQ==}
+    peerDependencies:
+      svelte: ^4.0.0
+    dependencies:
+      '@melt-ui/svelte': 0.61.2(svelte@5.0.0-next.123)
+      nanoid: 5.0.7
+      svelte: 5.0.0-next.123
+    dev: false
+
   /bl@4.1.0:
     resolution: {integrity: sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w==}
     dependencies:
@@ -2442,6 +2496,16 @@ packages:
   /clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
+    dev: false
+
+  /cmdk-sv@0.0.17(svelte@5.0.0-next.123):
+    resolution: {integrity: sha512-28QTrK1tT1TSNoGq9MVnzjeLNNjCgjmsM8c2HJfDpRt9t+GD+9m3wX/WdAPaP9jdoNYU0SSdZVdgsGgpaSQOYQ==}
+    peerDependencies:
+      svelte: ^4.0.0
+    dependencies:
+      bits-ui: 0.9.9(svelte@5.0.0-next.123)
+      nanoid: 5.0.7
+      svelte: 5.0.0-next.123
     dev: false
 
   /codemirror@6.0.1(@lezer/common@1.2.1):
@@ -3543,6 +3607,12 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
+  /nanoid@4.0.2:
+    resolution: {integrity: sha512-7ZtY5KTCNheRGfEFxnedV5zFiORN1+Y1N6zvPTnHQd8ENUvfaDBeuJDZb2bN/oXwXxu3qkTXDzy57W5vAmDTBw==}
+    engines: {node: ^14 || ^16 || >=18}
+    hasBin: true
+    dev: false
+
   /nanoid@5.0.7:
     resolution: {integrity: sha512-oLxFY2gd2IqnjcYyOXD8XGCftpGtZP2AbHbOkthDkvRywH5ayNtPVy9YlOPcHckXzbLTCHpkb7FB+yuxKV13pQ==}
     engines: {node: ^18 || >=20}
@@ -3605,6 +3675,10 @@ packages:
     dependencies:
       mimic-fn: 4.0.0
     dev: true
+
+  /orderedmap@2.1.1:
+    resolution: {integrity: sha512-TvAWxi0nDe1j/rtMcWcIj94+Ffe6n7zhow33h40SKxmsmozs6dz/e+EajymfoFcHd7sxNn8yHM8839uixMOV6g==}
+    dev: false
 
   /p-limit@5.0.0:
     resolution: {integrity: sha512-/Eaoq+QyLSiXQ4lyYV23f14mZRQcXnxfHrN0vCai+ak9G0pp9iEQukIIZq5NccEvwRB8PUnZT0KsOoDCINS1qQ==}
@@ -3853,6 +3927,79 @@ packages:
     resolution: {integrity: sha512-dKp+C4iXWK4vVYZmYSd0KBH5F/h1HoZRsbJ82AVKRO3PEo8L4lBS/vLwhVtpwwuYcoIsVY+1JYKR268yn480uQ==}
     dev: true
 
+  /prosemirror-autocomplete@0.4.3:
+    resolution: {integrity: sha512-a4w/SOzgrTjXaWpSYMrai6H3KHSUBuADZC/DBm4VApiD9LGHpv98zQbHzsHgInrEoWcBGzYVT0HUD3tLgrsEVQ==}
+    dependencies:
+      prosemirror-inputrules: 1.4.0
+      prosemirror-state: 1.4.3
+      prosemirror-view: 1.33.6
+    dev: false
+
+  /prosemirror-commands@1.5.2:
+    resolution: {integrity: sha512-hgLcPaakxH8tu6YvVAaILV2tXYsW3rAdDR8WNkeKGcgeMVQg3/TMhPdVoh7iAmfgVjZGtcOSjKiQaoeKjzd2mQ==}
+    dependencies:
+      prosemirror-model: 1.21.0
+      prosemirror-state: 1.4.3
+      prosemirror-transform: 1.9.0
+    dev: false
+
+  /prosemirror-history@1.4.0:
+    resolution: {integrity: sha512-UUiGzDVcqo1lovOPdi9YxxUps3oBFWAIYkXLu3Ot+JPv1qzVogRbcizxK3LhHmtaUxclohgiOVesRw5QSlMnbQ==}
+    dependencies:
+      prosemirror-state: 1.4.3
+      prosemirror-transform: 1.9.0
+      prosemirror-view: 1.33.6
+      rope-sequence: 1.3.4
+    dev: false
+
+  /prosemirror-inputrules@1.4.0:
+    resolution: {integrity: sha512-6ygpPRuTJ2lcOXs9JkefieMst63wVJBgHZGl5QOytN7oSZs3Co/BYbc3Yx9zm9H37Bxw8kVzCnDsihsVsL4yEg==}
+    dependencies:
+      prosemirror-state: 1.4.3
+      prosemirror-transform: 1.9.0
+    dev: false
+
+  /prosemirror-keymap@1.2.2:
+    resolution: {integrity: sha512-EAlXoksqC6Vbocqc0GtzCruZEzYgrn+iiGnNjsJsH4mrnIGex4qbLdWWNza3AW5W36ZRrlBID0eM6bdKH4OStQ==}
+    dependencies:
+      prosemirror-state: 1.4.3
+      w3c-keyname: 2.2.8
+    dev: false
+
+  /prosemirror-model@1.21.0:
+    resolution: {integrity: sha512-zLpS1mVCZLA7VTp82P+BfMiYVPcX1/z0Mf3gsjKZtzMWubwn2pN7CceMV0DycjlgE5JeXPR7UF4hJPbBV98oWA==}
+    dependencies:
+      orderedmap: 2.1.1
+    dev: false
+
+  /prosemirror-schema-basic@1.2.2:
+    resolution: {integrity: sha512-/dT4JFEGyO7QnNTe9UaKUhjDXbTNkiWTq/N4VpKaF79bBjSExVV2NXmJpcM7z/gD7mbqNjxbmWW5nf1iNSSGnw==}
+    dependencies:
+      prosemirror-model: 1.21.0
+    dev: false
+
+  /prosemirror-state@1.4.3:
+    resolution: {integrity: sha512-goFKORVbvPuAQaXhpbemJFRKJ2aixr+AZMGiquiqKxaucC6hlpHNZHWgz5R7dS4roHiwq9vDctE//CZ++o0W1Q==}
+    dependencies:
+      prosemirror-model: 1.21.0
+      prosemirror-transform: 1.9.0
+      prosemirror-view: 1.33.6
+    dev: false
+
+  /prosemirror-transform@1.9.0:
+    resolution: {integrity: sha512-5UXkr1LIRx3jmpXXNKDhv8OyAOeLTGuXNwdVfg8x27uASna/wQkr9p6fD3eupGOi4PLJfbezxTyi/7fSJypXHg==}
+    dependencies:
+      prosemirror-model: 1.21.0
+    dev: false
+
+  /prosemirror-view@1.33.6:
+    resolution: {integrity: sha512-zRLUNgLIQfd8IfGprsXxWTjdA8xEAFJe8cDNrOptj6Mop9sj+BMeVbJvceyAYCm5G2dOdT2prctH7K9dfnpIMw==}
+    dependencies:
+      prosemirror-model: 1.21.0
+      prosemirror-state: 1.4.3
+      prosemirror-transform: 1.9.0
+    dev: false
+
   /proxy-target@3.0.2:
     resolution: {integrity: sha512-FFE1XNwXX/FNC3/P8HiKaJSy/Qk68RitG/QEcLy/bVnTAPlgTAWPZKh0pARLAnpfXQPKyalBhk009NRTgsk8vQ==}
     dev: false
@@ -3993,6 +4140,10 @@ packages:
       '@rollup/rollup-win32-x64-msvc': 4.17.2
       fsevents: 2.3.3
     dev: true
+
+  /rope-sequence@1.3.4:
+    resolution: {integrity: sha512-UT5EDe2cu2E/6O4igUr5PSFs23nvvukicWHx6GnOPlHAiiYbzNuCRQCuiUdHJQcqKalLKlrYJnjY0ySGsXNQXQ==}
+    dev: false
 
   /run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
