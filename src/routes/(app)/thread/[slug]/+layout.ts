@@ -1,19 +1,11 @@
 import { registerModel, useDb } from "$database";
-import { notePagesTable, noteTable, pageTable } from "$database/schema";
+import { labelTable, noteLabelsTable, noteTable } from "$database/schema";
 import { asc, eq } from "drizzle-orm";
-import { error } from "@sveltejs/kit";
 
 export async function load({ params, depends }) {
   console.log("loading page", params.slug);
   if (params.slug === "recent") {
     const notes = await useDb().query.noteTable.findMany({
-      with: {
-        notePages: {
-          with: {
-            page: true,
-          },
-        },
-      },
       orderBy: asc(noteTable.createdAt),
     });
     depends(`view:notes`);
@@ -25,29 +17,28 @@ export async function load({ params, depends }) {
     };
   }
 
-  const page = await useDb().query.pageTable.findFirst({
-    where: eq(pageTable.slug, params.slug),
-  });
-  if (!page) {
-    return error(404, "Page not found");
-  }
   const notes = await useDb()
     .select({
       id: noteTable.id,
       content: noteTable.content,
+      labels: noteTable.labels,
       createdAt: noteTable.createdAt,
       updatedAt: noteTable.updatedAt,
     })
     .from(noteTable)
-    .innerJoin(notePagesTable, eq(noteTable.id, notePagesTable.noteId))
-    .where(eq(notePagesTable.pageSlug, params.slug))
+    .innerJoin(noteLabelsTable, eq(noteTable.id, noteLabelsTable.noteId))
+    .where(eq(noteLabelsTable.labelSlug, params.slug))
     .execute();
   depends(`view:notes`);
   registerModel(noteTable, notes, depends);
+
+  const label = await useDb().query.labelTable.findFirst({
+    where: eq(labelTable.slug, params.slug),
+  });
+
   return {
     notes,
-    page,
-    pageName: page.name,
-    breadcrumbs: [{ title: page.name, url: `/thread/${params.slug}` }],
+    labelName: label ? label.name : params.slug,
+    breadcrumbs: [{ title: label, url: `/thread/${params.slug}` }],
   };
 }

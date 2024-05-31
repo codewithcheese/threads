@@ -1,23 +1,12 @@
-import { goto } from "$app/navigation";
 import {
   Decoration,
   type DecorationSet,
   EditorView,
-  keymap,
   ViewPlugin,
   ViewUpdate,
   WidgetType,
 } from "@codemirror/view";
-import type { CompletionSource } from "@codemirror/autocomplete";
-import { useDb } from "$database";
-import { like } from "drizzle-orm";
-import { pageTable } from "$database/schema";
-import {
-  type EditorState,
-  Facet,
-  RangeSet,
-  RangeSetBuilder,
-} from "@codemirror/state";
+import { type EditorState, RangeSetBuilder } from "@codemirror/state";
 import { slugify } from "$lib/slugify";
 
 let linkRegex = /\[\[([^\]]|](?!]))*/g;
@@ -103,22 +92,3 @@ export const linkWidget = ViewPlugin.fromClass(
     decorations: (v) => v.decorations,
   },
 );
-
-const linkCompletion: CompletionSource = async (context) => {
-  const word = context.matchBefore(/\[\[([^\]]|](?!]))*/);
-  if (word && word.from < word.to) {
-    const docs = await useDb().query.pageTable.findMany({
-      where: like(pageTable.name, `${word.text.slice(2)}%`),
-    });
-    const mentions = docs.map((d) => ({ label: d.name, type: "page" }));
-    return {
-      from: word.from + 2,
-      options: mentions.map((mention) => ({
-        label: mention.label,
-        apply: `${mention.label}`,
-      })),
-      filter: true,
-    };
-  }
-  return null;
-};

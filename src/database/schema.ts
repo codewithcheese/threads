@@ -9,64 +9,70 @@ import { sql } from "drizzle-orm/sql";
 import { type InferSelectModel, relations } from "drizzle-orm";
 import { type Message } from "ai";
 import { unique } from "drizzle-orm/pg-core";
+
 /**
  * Tables
  */
 
-export const pageTable = sqliteTable("pages", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  slug: text("slug").notNull().unique(),
-  createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updatedAt").default(sql`(CURRENT_TIMESTAMP)`),
-});
-
 export const noteTable = sqliteTable("notes", {
   id: text("id").primaryKey(),
   content: text("content").notNull(),
+  labels: text("labels", { mode: "json" })
+    .$type<string[]>()
+    .default([])
+    .notNull(),
   createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updatedAt").default(sql`(CURRENT_TIMESTAMP)`),
 });
 
-export const notePagesTable = sqliteTable(
-  "notePages",
+export const noteLabelsTable = sqliteTable(
+  "noteLabels",
   {
     noteId: text("noteId")
       .notNull()
       .references(() => noteTable.id),
-    pageId: text("pageId")
-      .notNull()
-      .references(() => pageTable.id),
-    pageSlug: text("pageSlug").notNull(),
+    label: text("label").notNull(),
+    labelSlug: text("labelSlug").notNull(),
     createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
   },
   (t) => ({
-    pk: primaryKey({ columns: [t.noteId, t.pageId] }),
-    pageSlugIndex: index("pageSlugIndex").on(t.pageSlug),
+    pk: primaryKey({ columns: [t.noteId, t.label] }),
+    labelSlugIndex: index("labelSlugIndex").on(t.labelSlug),
   }),
 );
+
+/**
+ *  For reversing a label slug to a label name
+ */
+export const labelTable = sqliteTable("labels", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text("updatedAt").default(sql`(CURRENT_TIMESTAMP)`),
+});
 
 /**
  * Models
  */
 
 export const modelTable = sqliteTable(
-  "model",
+  "models",
   {
     id: text("id").notNull().primaryKey(),
-    accountId: text("accountId")
+    keyId: text("keyId")
       .notNull()
-      .references(() => accountTable.id),
+      .references(() => keyTable.id),
     name: text("name").notNull(),
     visible: int("visible").notNull(),
     createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
   },
   (table) => ({
-    accountIdIndex: index("accountIdIndex").on(table.accountId),
+    keyIdIndex: index("keyIdIndex").on(table.keyId),
   }),
 );
 
-export const accountTable = sqliteTable("account", {
+export const keyTable = sqliteTable("keys", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   serviceId: text("serviceId").notNull(),
@@ -83,7 +89,7 @@ export type ChatbotMessage = {
   content: string;
 };
 
-export const chatbotTable = sqliteTable("chatbot", {
+export const chatbotTable = sqliteTable("chatbots", {
   id: text("id").primaryKey(),
   name: text("name").notNull().unique(),
   description: text("description").notNull().default(""),
@@ -96,7 +102,7 @@ export const chatbotTable = sqliteTable("chatbot", {
   updatedAt: text("updatedAt").default(sql`(CURRENT_TIMESTAMP)`),
 });
 
-export const chatTable = sqliteTable("chat", {
+export const chatTable = sqliteTable("chats", {
   id: text("id").primaryKey(),
   pageSlug: text("pageSlug").notNull(),
   createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
@@ -104,7 +110,7 @@ export const chatTable = sqliteTable("chat", {
 });
 
 export const chatMessageTable = sqliteTable(
-  "chatMessage",
+  "chatMessages",
   {
     id: text("id").notNull(),
     chatId: text("chatId")
@@ -129,7 +135,6 @@ export const chatMessageTable = sqliteTable(
  * Types
  */
 
-export type Page = InferSelectModel<typeof pageTable>;
 export type Note = InferSelectModel<typeof noteTable>;
 export type Chatbot = InferSelectModel<typeof chatbotTable>;
 export type Chat = InferSelectModel<typeof chatTable>;
@@ -139,21 +144,13 @@ export type ChatMessage = InferSelectModel<typeof chatMessageTable>;
  * Relationships
  */
 
-export const pageRelations = relations(pageTable, ({ many }) => ({
-  notePages: many(notePagesTable),
-}));
-
 export const noteRelations = relations(noteTable, ({ many }) => ({
-  notePages: many(notePagesTable),
+  noteLabels: many(noteLabelsTable),
 }));
 
-export const notePagesRelations = relations(notePagesTable, ({ one }) => ({
-  page: one(pageTable, {
-    fields: [notePagesTable.pageId],
-    references: [pageTable.id],
-  }),
+export const noteLabelsRelations = relations(noteLabelsTable, ({ one }) => ({
   note: one(noteTable, {
-    fields: [notePagesTable.noteId],
+    fields: [noteLabelsTable.noteId],
     references: [noteTable.id],
   }),
 }));

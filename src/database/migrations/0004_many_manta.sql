@@ -1,1 +1,0 @@
-ALTER TABLE `chat` ADD `pageSlug` text NOT NULL;

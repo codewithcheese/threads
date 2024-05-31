@@ -114,3 +114,20 @@ button svg {
 .link-widget a {
   @apply text-blue-500 underline cursor-pointer;
 }
+
+.note {
+  @apply py-2;
+}
+
+.label {
+  @apply text-sm p-1 rounded-full bg-gray-200 text-gray-800;
+}
+
+.ProseMirror > * + * {
+  @apply border-t border-gray-200;
+}
+
+.ProseMirror-focused {
+  @apply outline-none;
+}
+
