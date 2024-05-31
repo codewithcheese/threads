@@ -1,8 +1,5 @@
 import { type NodeSpec, Schema } from "prosemirror-model";
 import { nanoid } from "nanoid";
-import { Plugin } from "prosemirror-state";
-import { DecorationSet } from "prosemirror-view";
-import { Decoration } from "@codemirror/view";
 
 // export const activeNodePlugin = new Plugin({
 //   state: {
@@ -65,11 +62,19 @@ export const nodes = {
   } satisfies NodeSpec,
 
   label: {
-    content: "inline*",
     group: "block",
+    atom: true,
+    editable: false,
+    attrs: {
+      value: { default: "" },
+    },
     parseDOM: [{ tag: "span.label" }],
-    toDOM() {
-      return ["span", { class: "label" }, 0];
+    toDOM(node) {
+      return [
+        "span",
+        { class: "label", "data-label": node.attrs.value },
+        node.attrs.value,
+      ];
     },
   } satisfies NodeSpec,
 

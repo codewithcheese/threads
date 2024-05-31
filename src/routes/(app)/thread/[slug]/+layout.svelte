@@ -26,8 +26,6 @@
   import { nanoid } from "nanoid";
   import { ReplaceStep } from "prosemirror-transform";
   import { type Node } from "prosemirror-model";
-  import { parseContent } from "$lib/prosemirror/content";
-  import { toContent } from "$lib/prosemirror/content.js";
   import { autocomplete } from "prosemirror-autocomplete";
   import Suggestions from "./Suggestions.svelte";
   import {
@@ -35,7 +33,12 @@
     type AutocompleteAction,
     type Options,
   } from "prosemirror-autocomplete";
-  import { createLabelFromRange } from "$lib/prosemirror/notes";
+  import {
+    createLabelFromRange,
+    labelDecorationPlugin,
+    parseNote,
+    toContent,
+  } from "$lib/prosemirror/note";
 
   let { data } = $props();
 
@@ -150,10 +153,7 @@
     const { schema, tr } = view.state;
 
     const nodes = notesToAdd.map((note) => {
-      return schema.nodes.note.create(
-        { id: note.id },
-        parseContent(note.content, note.labels),
-      );
+      return parseNote(note);
     });
 
     if (nodes.length > 0) {
@@ -251,6 +251,7 @@
       doc,
       schema,
       plugins: [
+        labelDecorationPlugin,
         ...autocomplete(autocompleteOptions),
         history(),
         keymap({ "Mod-z": undo, "Mod-shift-z": redo }),
