@@ -251,33 +251,33 @@
       doc,
       schema,
       plugins: [
-        labelDecorationPlugin,
+        // labelDecorationPlugin,
         ...autocomplete(autocompleteOptions),
         history(),
         keymap({ "Mod-z": undo, "Mod-shift-z": redo }),
-        keymap(baseKeymap),
+        // keymap(baseKeymap),
       ],
     });
     view = new EditorView(editor, {
       state: editorState,
       dispatchTransaction(transaction) {
-        let newNodes: any[] = [];
-
-        transaction.steps.forEach((step) => {
-          if (step instanceof ReplaceStep) {
-            step.slice.content.forEach((node) => {
-              newNodes.push(node);
-            });
-          }
-        });
-
-        console.log("Added nodes:", newNodes);
-        console.log(
-          "Document size went from",
-          transaction.before.content.size,
-          "to",
-          transaction.doc.content.size,
-        );
+        // let newNodes: any[] = [];
+        //
+        // transaction.steps.forEach((step) => {
+        //   if (step instanceof ReplaceStep) {
+        //     step.slice.content.forEach((node) => {
+        //       newNodes.push(node);
+        //     });
+        //   }
+        // });
+        //
+        // console.log("Added nodes:", newNodes);
+        // console.log(
+        //   "Document size went from",
+        //   transaction.before.content.size,
+        //   "to",
+        //   transaction.doc.content.size,
+        // );
 
         let oldState = view.state;
         let newState = oldState.apply(transaction);

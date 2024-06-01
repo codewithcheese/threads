@@ -38,7 +38,7 @@ export const nodes = {
     attrs: {
       id: { default: nanoid(10) },
     },
-    content: "block* label*",
+    content: "block*",
     parseDOM: [
       {
         tag: "div.note",
@@ -62,9 +62,10 @@ export const nodes = {
   } satisfies NodeSpec,
 
   label: {
-    group: "block",
+    inline: true,
+    group: "inline",
     atom: true,
-    editable: false,
+    // editable: false,
     attrs: {
       value: { default: "" },
     },

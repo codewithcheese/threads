@@ -7,6 +7,7 @@ import type { Note } from "$database/schema";
 
 export function parseNote(note: Note): Node {
   const paragraph = schema.nodes.paragraph;
+  console.log("parseNote", note);
 
   const paragraphs = note.content
     .split("\n\n")
@@ -30,6 +31,7 @@ export function toContent(node: Node) {
       `Unable to convert non-note (${node.type.name}) node to content`,
     );
   }
+  console.log("node.json", node.toJSON());
   let content = "";
   node.descendants((child) => {
     if (content && child.type === schema.nodes.paragraph) {
@@ -64,7 +66,12 @@ export function createLabelFromRange(
   const insertionPos = tr.mapping.map(from);
 
   // insert label
-  tr.insert(insertionPos, schema.nodes.label.create({ value: label }));
+  tr.insert(insertionPos, [
+    schema.nodes.label.create({ value: label }),
+    schema.text(" "),
+  ]);
+
+  // tr.addMark(from, to, schema.marks.label.create());
 
   view.dispatch(tr);
 }
