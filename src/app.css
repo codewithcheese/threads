@@ -115,17 +115,17 @@ button svg {
   @apply text-blue-500 underline cursor-pointer;
 }
 
-.note {
-  @apply py-2;
-}
+/*.note {*/
+/*  @apply py-2;*/
+/*}*/
 
-.label {
-  @apply text-sm p-1 rounded-full hover:bg-gray-200 text-gray-800 cursor-pointer;
-}
+/*.label {*/
+/*  @apply text-sm p-1 rounded-full hover:bg-gray-200 text-gray-800 cursor-pointer;*/
+/*}*/
 
-.ProseMirror > * + * {
-  @apply border-t border-gray-200;
-}
+/*.ProseMirror > * + * {*/
+/*  @apply border-t border-gray-200;*/
+/*}*/
 
 .ProseMirror-focused {
   @apply outline-none;

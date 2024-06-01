@@ -32,12 +32,11 @@ export const noteLabelsTable = sqliteTable(
       .notNull()
       .references(() => noteTable.id),
     label: text("label").notNull(),
-    labelSlug: text("labelSlug").notNull(),
+    labelSlug: text("labelSlug").notNull().unique(),
     createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
   },
   (t) => ({
     pk: primaryKey({ columns: [t.noteId, t.label] }),
-    labelSlugIndex: index("labelSlugIndex").on(t.labelSlug),
   }),
 );
 

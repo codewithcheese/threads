@@ -1021,12 +1021,12 @@ let del = chainCommands(deleteSelection, joinForward, selectNodeForward);
 /// * **Mod-Delete** to `deleteSelection`, `joinForward`, `selectNodeForward`
 /// * **Mod-a** to `selectAll`
 export const pcBaseKeymap: { [key: string]: Command } = {
-  Enter: chainCommands(
-    newlineInCode,
-    createParagraphNear,
-    liftEmptyBlock,
-    splitBlock,
-  ),
+  // Enter: chainCommands(
+  //   newlineInCode,
+  //   createParagraphNear,
+  //   liftEmptyBlock,
+  //   splitBlock,
+  // ),
   "Mod-Enter": exitCode,
   Backspace: backspace,
   "Mod-Backspace": backspace,

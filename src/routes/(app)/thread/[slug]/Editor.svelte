@@ -1,135 +1,238 @@
 <script lang="ts">
-  import CodeMirror from "svelte-codemirror-editor";
-  import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
-  import { languages } from "@codemirror/language-data";
+  import { EditorState, TextSelection } from "prosemirror-state";
+  import { history, redo, undo } from "prosemirror-history";
+  import { keymap } from "prosemirror-keymap";
   import {
-    crosshairCursor,
-    drawSelection,
-    dropCursor,
-    EditorView,
-    highlightActiveLine,
-    highlightActiveLineGutter,
-    highlightSpecialChars,
-    keymap,
-    lineNumbers,
-    rectangularSelection,
-  } from "@codemirror/view";
-  import { EditorState, type Extension, Prec } from "@codemirror/state";
+    baseKeymap,
+    chainCommands,
+    createParagraphNear,
+    liftEmptyBlock,
+    newlineInCode,
+    splitBlockAs,
+  } from "$lib/prosemirror/commands";
+  import { EditorView } from "prosemirror-view";
+  import { onMount } from "svelte";
+  import { schema } from "$lib/prosemirror/schema";
   import {
-    bracketMatching,
-    defaultHighlightStyle,
-    foldGutter,
-    foldKeymap,
-    indentOnInput,
-    syntaxHighlighting,
-  } from "@codemirror/language";
-  import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-  import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
-  import {
-    autocompletion,
-    closeBrackets,
-    closeBracketsKeymap,
-    completionKeymap,
-  } from "@codemirror/autocomplete";
-  import { lintKeymap } from "@codemirror/lint";
-  import { linkWidget } from "$lib/editor";
+    ActionKind,
+    autocomplete,
+    type AutocompleteAction,
+    type Options,
+  } from "prosemirror-autocomplete";
+  import Suggestions from "./Suggestions.svelte";
+  import { getAutocompleteInput } from "$lib/prosemirror/autocomplete.svelte";
+  import { getMatchingLabels } from "./$data";
 
-  let {
-    content = $bindable(""),
-    placeholder = "What's on your mind?",
-    resetOnSubmit = false,
-    onSubmit,
-  }: {
+  type Props = {
     content: string;
-    placeholder?: string;
+    focused: boolean;
     resetOnSubmit?: boolean;
     onSubmit: (value: string) => void;
-  } = $props();
+    onLabelSubmit: (label: string) => void;
+    onCommandSubmit: (command: string) => void;
+  };
+  let {
+    content,
+    focused,
+    resetOnSubmit = false,
+    onSubmit,
+    onLabelSubmit,
+    onCommandSubmit,
+  }: Props = $props();
 
-  let editor: EditorView;
+  let editor: HTMLDivElement = $state(null)!;
+  let view: EditorView = $state(null)!;
 
-  export const basicSetup: Extension = (() => [
-    // lineNumbers(),
-    // highlightActiveLineGutter(),
-    highlightSpecialChars(),
-    history(),
-    // foldGutter(),
-    drawSelection(),
-    dropCursor(),
-    EditorState.allowMultipleSelections.of(true),
-    indentOnInput(),
-    syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-    bracketMatching(),
-    closeBrackets(),
-    autocompletion(),
-    rectangularSelection(),
-    crosshairCursor(),
-    // highlightActiveLine(),
-    highlightSelectionMatches(),
-    keymap.of([
-      ...closeBracketsKeymap,
-      ...defaultKeymap,
-      ...searchKeymap,
-      ...historyKeymap,
-      ...foldKeymap,
-      ...completionKeymap,
-      ...lintKeymap,
-    ]),
-  ])();
+  $effect(() => {
+    if (view && focused) {
+      console.log("focus");
+      view.focus();
+      let lastPos = view.state.doc.content.size;
+      const tr = view.state.tr.setSelection(
+        TextSelection.create(view.state.doc, lastPos),
+      );
+      view.dispatch(tr);
+    }
+  });
 
-  const extensions = [
-    Prec.highest(
-      keymap.of([
-        {
-          key: "Enter",
-          run: (view) => {
-            // use view state to get the current content, since cannot rely on
-            // the content binding to be updated before enter is pressed
-            const value = view.state.doc.toString();
-            if (value.length === 0) {
-              return false;
-            }
-            onSubmit(value);
-            if (resetOnSubmit) {
-              view.dispatch({
-                changes: {
-                  from: 0,
-                  to: view.state.doc.length,
-                  insert: "",
-                },
-              });
-            }
-            return true;
-          },
-        },
-        {
-          key: "Shift-Enter",
-          run: () => {
-            return false;
-          },
-        },
-      ]),
-    ),
-    EditorView.lineWrapping,
-    markdown({
-      base: markdownLanguage,
-      codeLanguages: languages,
-    }),
-    basicSetup,
-    linkWidget,
-  ];
+  let suggestionState: {
+    open: boolean;
+    filter: string | undefined;
+    suggestions: { name: string }[];
+  } = $state({
+    open: false,
+    filter: undefined,
+    suggestions: [],
+  });
+
+  export const autocompleteOptions: Options = {
+    triggers: [
+      { name: "hashtag", trigger: "#", cancelOnFirstSpace: true },
+      { name: "slash", trigger: "/", cancelOnFirstSpace: true },
+    ],
+    reducer: autocompleteReducer,
+  };
+
+  function autocompleteReducer(action: AutocompleteAction): boolean {
+    if (!action.type) {
+      return true;
+    }
+    if (action.type.name === "hashtag") {
+      return labelReducer(action);
+    }
+    if (action.type.name === "slash") {
+      return commandReducer(action);
+    }
+    return true;
+  }
+
+  function labelReducer(action: AutocompleteAction): boolean {
+    switch (action.kind) {
+      case ActionKind.open:
+        suggestionState.open = true;
+        return true;
+      case ActionKind.close:
+        suggestionState.open = false;
+        return true;
+      case ActionKind.up:
+        return true;
+      case ActionKind.down:
+        return true;
+      case ActionKind.enter: {
+        suggestionState.open = false;
+        const input = getAutocompleteInput(view, action);
+        if (!input) {
+          return true;
+        }
+        onLabelSubmit(input.slice(1));
+        // remove input
+        view.dispatch(view.state.tr.delete(action.range.from, action.range.to));
+        return true;
+      }
+      default:
+        if (suggestionState.open && action.filter) {
+          suggestLabels(action.filter);
+        }
+        return false;
+    }
+  }
+
+  function commandSuggestions() {
+    return [{ name: "YouTube" }];
+  }
+
+  function commandReducer(action: AutocompleteAction) {
+    switch (action.kind) {
+      case ActionKind.open:
+        suggestionState.open = true;
+        suggestionState.suggestions = commandSuggestions();
+        return true;
+      case ActionKind.close:
+        suggestionState.open = false;
+        return true;
+      case ActionKind.up:
+        return true;
+      case ActionKind.down:
+        return true;
+      case ActionKind.enter: {
+        suggestionState.open = false;
+        const input = getAutocompleteInput(view, action);
+        if (!input) {
+          return true;
+        }
+        onCommandSubmit(input.slice(1));
+        // remove input
+        view.dispatch(view.state.tr.delete(action.range.from, action.range.to));
+        return true;
+      }
+      default:
+        return false;
+    }
+  }
+
+  async function suggestLabels(label: string) {
+    suggestionState.suggestions = await getMatchingLabels(label);
+  }
+
+  function moveSuggestions() {
+    const suggestion = document.querySelector("#suggestions") as HTMLDivElement;
+    const rect = document
+      .querySelector(".autocomplete")
+      ?.getBoundingClientRect();
+    if (!rect) return;
+    suggestion.style.top = `${rect.top + rect.height}px`;
+    suggestion.style.left = `${rect.left}px`;
+  }
+
+  baseKeymap["Enter"] = chainCommands(
+    newlineInCode,
+    createParagraphNear,
+    liftEmptyBlock,
+    // always split a block to a paragraph
+    splitBlockAs(() => ({ type: schema.nodes.paragraph })),
+  );
+
+  $effect(() => {
+    if (!suggestionState.open) return;
+    moveSuggestions();
+  });
+
+  function handleSubmit(state: EditorState) {
+    let newContent = "";
+    state.doc.descendants((child) => {
+      if (newContent && child.type === schema.nodes.paragraph) {
+        newContent += "\n\n";
+      }
+      if (child.type === schema.nodes.text) {
+        newContent += child.textContent;
+      }
+    });
+    onSubmit(newContent);
+    if (resetOnSubmit) {
+      const state = createState();
+      view.updateState(state);
+    }
+    return true;
+  }
+
+  function createDoc() {
+    return schema.node("doc", null, [
+      schema.nodes.paragraph.create(null, content ? schema.text(content) : []),
+    ]);
+  }
+
+  function createState() {
+    return EditorState.create({
+      doc: createDoc(),
+      schema,
+      plugins: [
+        // labelDecorationPlugin,
+        ...autocomplete(autocompleteOptions),
+        keymap({ Enter: handleSubmit }),
+        history(),
+        keymap({ "Mod-z": undo, "Mod-shift-z": redo }),
+        keymap(baseKeymap),
+      ],
+    });
+  }
+
+  onMount(() => {
+    let editorState = createState();
+    view = new EditorView(editor, {
+      state: editorState,
+      dispatchTransaction(transaction) {
+        let oldState = view.state;
+        let newState = oldState.apply(transaction);
+        view.updateState(newState);
+      },
+    });
+    if (focused) {
+      view.focus();
+    }
+  });
+
+  // $inspect(suggestionState);
 </script>
 
-<CodeMirror
-  {placeholder}
-  basic={false}
-  class="w-full"
-  bind:value={content}
-  {extensions}
-/>
-
-<style lang="postcss">
-  :global(.cm-line) {
-    padding: 0 2px 0 2px !important;
-  }
-</style>
+<div bind:this={editor}></div>
+<Suggestions open={suggestionState.open} filter={suggestionState.filter} />
