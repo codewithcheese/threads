@@ -19,25 +19,25 @@
     type AutocompleteAction,
     type Options,
   } from "prosemirror-autocomplete";
-  import Suggestions from "./Suggestions.svelte";
-  import { getAutocompleteInput } from "$lib/prosemirror/autocomplete.svelte";
-  import { getMatchingLabels } from "./$data";
+  import AutocompleteMenu from "./AutocompleteMenu.svelte";
 
   type Props = {
     content: string;
     focused: boolean;
     resetOnSubmit?: boolean;
+    onFocus: () => void;
     onSubmit: (value: string) => void;
     onLabelSubmit: (label: string) => void;
-    onCommandSubmit: (command: string) => void;
+    onToolSubmit: (command: string) => void;
   };
   let {
     content,
     focused,
     resetOnSubmit = false,
+    onFocus,
     onSubmit,
     onLabelSubmit,
-    onCommandSubmit,
+    onToolSubmit,
   }: Props = $props();
 
   let editor: HTMLDivElement = $state(null)!;
@@ -45,7 +45,6 @@
 
   $effect(() => {
     if (view && focused) {
-      console.log("focus");
       view.focus();
       let lastPos = view.state.doc.content.size;
       const tr = view.state.tr.setSelection(
@@ -55,113 +54,34 @@
     }
   });
 
-  let suggestionState: {
-    open: boolean;
-    filter: string | undefined;
-    suggestions: { name: string }[];
-  } = $state({
-    open: false,
-    filter: undefined,
-    suggestions: [],
-  });
+  let autocompleteAction: AutocompleteAction | null = $state(null);
 
   export const autocompleteOptions: Options = {
     triggers: [
       { name: "hashtag", trigger: "#", cancelOnFirstSpace: true },
-      { name: "slash", trigger: "/", cancelOnFirstSpace: true },
+      { name: "tool", trigger: "/", cancelOnFirstSpace: true },
     ],
-    reducer: autocompleteReducer,
+    reducer: (action) => {
+      autocompleteAction = action;
+      console.log("reducer", action);
+      return action.kind !== ActionKind.enter;
+    },
   };
 
-  function autocompleteReducer(action: AutocompleteAction): boolean {
-    if (!action.type) {
-      return true;
-    }
-    if (action.type.name === "hashtag") {
-      return labelReducer(action);
-    }
-    if (action.type.name === "slash") {
-      return commandReducer(action);
-    }
-    return true;
-  }
-
-  function labelReducer(action: AutocompleteAction): boolean {
-    switch (action.kind) {
-      case ActionKind.open:
-        suggestionState.open = true;
-        return true;
-      case ActionKind.close:
-        suggestionState.open = false;
-        return true;
-      case ActionKind.up:
-        return true;
-      case ActionKind.down:
-        return true;
-      case ActionKind.enter: {
-        suggestionState.open = false;
-        const input = getAutocompleteInput(view, action);
-        if (!input) {
-          return true;
-        }
-        onLabelSubmit(input.slice(1));
-        // remove input
-        view.dispatch(view.state.tr.delete(action.range.from, action.range.to));
-        return true;
-      }
+  function handleAutocompleteSubmit(
+    type: string,
+    selected: { id: string; name: string },
+  ) {
+    switch (type) {
+      case "hashtag":
+        onLabelSubmit(selected.name);
+        break;
+      case "tool":
+        onToolSubmit(selected.id);
+        break;
       default:
-        if (suggestionState.open && action.filter) {
-          suggestLabels(action.filter);
-        }
-        return false;
+        break;
     }
-  }
-
-  function commandSuggestions() {
-    return [{ name: "YouTube" }];
-  }
-
-  function commandReducer(action: AutocompleteAction) {
-    switch (action.kind) {
-      case ActionKind.open:
-        suggestionState.open = true;
-        suggestionState.suggestions = commandSuggestions();
-        return true;
-      case ActionKind.close:
-        suggestionState.open = false;
-        return true;
-      case ActionKind.up:
-        return true;
-      case ActionKind.down:
-        return true;
-      case ActionKind.enter: {
-        suggestionState.open = false;
-        const input = getAutocompleteInput(view, action);
-        if (!input) {
-          return true;
-        }
-        onCommandSubmit(input.slice(1));
-        // remove input
-        view.dispatch(view.state.tr.delete(action.range.from, action.range.to));
-        return true;
-      }
-      default:
-        return false;
-    }
-  }
-
-  async function suggestLabels(label: string) {
-    suggestionState.suggestions = await getMatchingLabels(label);
-  }
-
-  function moveSuggestions() {
-    const suggestion = document.querySelector("#suggestions") as HTMLDivElement;
-    const rect = document
-      .querySelector(".autocomplete")
-      ?.getBoundingClientRect();
-    if (!rect) return;
-    suggestion.style.top = `${rect.top + rect.height}px`;
-    suggestion.style.left = `${rect.left}px`;
   }
 
   baseKeymap["Enter"] = chainCommands(
@@ -171,11 +91,6 @@
     // always split a block to a paragraph
     splitBlockAs(() => ({ type: schema.nodes.paragraph })),
   );
-
-  $effect(() => {
-    if (!suggestionState.open) return;
-    moveSuggestions();
-  });
 
   function handleSubmit(state: EditorState) {
     let newContent = "";
@@ -193,6 +108,10 @@
       view.updateState(state);
     }
     return true;
+  }
+
+  function handleBlur() {
+    autocompleteAction = null;
   }
 
   function createDoc() {
@@ -224,6 +143,14 @@
         let oldState = view.state;
         let newState = oldState.apply(transaction);
         view.updateState(newState);
+        // console.log("dispatchTransaction", transaction);
+        // if (transaction.getMeta("pointer-events")) {
+        //   onFocus();
+        // }
+      },
+      handleDOMEvents: {
+        focus: onFocus,
+        blur: handleBlur,
       },
     });
     if (focused) {
@@ -235,4 +162,7 @@
 </script>
 
 <div bind:this={editor}></div>
-<Suggestions open={suggestionState.open} filter={suggestionState.filter} />
+<AutocompleteMenu
+  onSubmit={handleAutocompleteSubmit}
+  action={autocompleteAction}
+/>

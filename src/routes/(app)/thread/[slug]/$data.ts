@@ -55,6 +55,7 @@ export async function getMatchingLabels(slug: string) {
     .limit(10);
   console.log("matching labels", labels);
   return labels.map((row) => ({
+    id: row.label,
     name: row.label,
   }));
 }

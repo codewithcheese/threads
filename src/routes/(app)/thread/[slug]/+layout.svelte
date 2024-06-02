@@ -73,6 +73,10 @@
         <div class="w-full">
           <NoteWidget
             focused={focusIndex === index}
+            onFocus={() => {
+              console.log("layout onFocus");
+              focusIndex = index;
+            }}
             onSubmit={() => handleSubmit(index)}
             {note}
           />

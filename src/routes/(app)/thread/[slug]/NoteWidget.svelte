@@ -7,8 +7,6 @@
   import { slugify } from "$lib/slugify";
   import { Button } from "$components/ui/button";
 
-  type Command = "youtube" | "image";
-
   let {
     note,
     focused = false,
@@ -16,13 +14,13 @@
     onSubmit = () => {},
   }: {
     note?: Note;
-    focused?: boolean;
-    onFocus?: () => void;
+    focused: boolean;
+    onFocus: () => void;
     onSubmit: () => void;
   } = $props();
 
   let activeNote = $derived(note ? note : emptyNote());
-  let command: Command | null = $state(null);
+  let activeTool: string | null = $state(null);
 
   function emptyNote(): Note {
     return {
@@ -33,10 +31,6 @@
       updatedAt: new Date().toISOString(),
     };
   }
-
-  // function handleClick() {
-  //   onFocus();
-  // }
 
   async function handleSubmit(value: string) {
     activeNote.content = value;
@@ -51,10 +45,10 @@
     await invalidate("view:notes");
   }
 
-  function handleCommandSubmit(value: string) {
-    console.log("handleCommandSubmit", value);
+  function handleToolSubmit(toolId: string) {
+    console.log("handleToolSubmit", toolId);
     // @ts-ignore
-    command = value;
+    activeTool = toolId;
   }
 
   async function handleLabelClick(label: string) {
@@ -65,11 +59,12 @@
 <Editor
   {focused}
   content={activeNote.content}
+  {onFocus}
   onSubmit={handleSubmit}
   onLabelSubmit={handleLabelSubmit}
-  onCommandSubmit={handleCommandSubmit}
+  onToolSubmit={handleToolSubmit}
 />
-{#if command === "youtube"}
+{#if activeTool === "youtube"}
   <div class="w-full">Youtube</div>
 {/if}
 <div>
@@ -83,9 +78,3 @@
     </Button>
   {/each}
 </div>
-
-<style lang="postcss">
-  :global(.page-link) {
-    @apply text-blue-500 underline;
-  }
-</style>
