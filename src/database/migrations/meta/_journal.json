@@ -15,6 +15,20 @@
       "when": 1717221734313,
       "tag": "0001_stale_sister_grimm",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1717401165299,
+      "tag": "0002_rare_kree",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1717404565742,
+      "tag": "0003_steep_nextwave",
+      "breakpoints": true
     }
   ]
 }

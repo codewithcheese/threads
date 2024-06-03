@@ -7,8 +7,6 @@ import {
 } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm/sql";
 import { type InferSelectModel, relations } from "drizzle-orm";
-import { type Message } from "ai";
-import { unique } from "drizzle-orm/pg-core";
 
 /**
  * Tables
@@ -21,6 +19,7 @@ export const noteTable = sqliteTable("notes", {
     .$type<string[]>()
     .default([])
     .notNull(),
+  chatId: text("chatId").references(() => chatTable.id),
   createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updatedAt").default(sql`(CURRENT_TIMESTAMP)`),
 });
@@ -103,7 +102,6 @@ export const chatbotTable = sqliteTable("chatbots", {
 
 export const chatTable = sqliteTable("chats", {
   id: text("id").primaryKey(),
-  pageSlug: text("pageSlug").notNull(),
   createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updatedAt").default(sql`(CURRENT_TIMESTAMP)`),
 });
@@ -143,8 +141,12 @@ export type ChatMessage = InferSelectModel<typeof chatMessageTable>;
  * Relationships
  */
 
-export const noteRelations = relations(noteTable, ({ many }) => ({
+export const noteRelations = relations(noteTable, ({ one, many }) => ({
   noteLabels: many(noteLabelsTable),
+  chat: one(chatTable, {
+    fields: [noteTable.chatId],
+    references: [chatTable.id],
+  }),
 }));
 
 export const noteLabelsRelations = relations(noteLabelsTable, ({ one }) => ({

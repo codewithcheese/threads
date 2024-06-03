@@ -9,6 +9,16 @@ import { nanoid } from "nanoid";
 import { eq, like } from "drizzle-orm";
 import { slugify } from "$lib/slugify";
 
+export type Command = {
+  id: string;
+  name: string;
+};
+
+export const COMMANDS = {
+  "new-chat": { id: "new-chat", name: "New Chat" },
+  "youtube-video": { id: "youtube-video", name: "Insert Youtube Video" },
+} as const;
+
 export async function upsertNote(note: Note) {
   console.log("upsertNote", note);
   await useDb().transaction(async (tx) => {
@@ -41,10 +51,13 @@ export async function deleteNote(id: string) {
   });
 }
 
-export async function createChat(pageSlug: string) {
-  const id = nanoid(10);
-  await useDb().insert(chatTable).values({ id, pageSlug });
-  return id;
+export async function createChat(noteId: string) {
+  const chatId = nanoid(10);
+  await useDb().transaction(async (tx) => {
+    await tx.insert(chatTable).values({ id: chatId });
+    await tx.update(noteTable).set({ chatId }).where(eq(noteTable.id, noteId));
+  });
+  return chatId;
 }
 
 export async function getMatchingLabels(slug: string) {

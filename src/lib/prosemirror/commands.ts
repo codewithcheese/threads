@@ -496,7 +496,7 @@ export function splitBlockAs(
     atEnd: boolean,
   ) => { type: NodeType; attrs?: Attrs } | null,
 ): Command {
-  console.log("splitBlockAs");
+  // console.log("splitBlockAs");
   return (state, dispatch) => {
     let { $from, $to } = state.selection;
     if (
@@ -996,7 +996,7 @@ export function chainCommands(...commands: readonly Command[]): Command {
   return function (state, dispatch, view) {
     for (let i = 0; i < commands.length; i++) {
       let result = commands[i](state, dispatch, view);
-      console.log("chain", commands[i].name, result);
+      // console.log("chain", commands[i].name, result);
       if (result) return true;
     }
     return false;

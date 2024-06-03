@@ -10,7 +10,7 @@
     ActionKind,
     type AutocompleteAction,
   } from "prosemirror-autocomplete";
-  import { getMatchingLabels } from "./$data";
+  import { COMMANDS, getMatchingLabels } from "./$data";
   import { untrack } from "svelte";
 
   type Props = {
@@ -27,8 +27,8 @@
     switch (action && action.type?.name) {
       case "hashtag":
         return "Labels";
-      case "tool":
-        return "Tools";
+      case "command":
+        return "Commands";
       default:
         return "Suggestions";
     }
@@ -51,6 +51,7 @@
           moveSuggestions();
         }
         if (action && value && action.kind === ActionKind.enter) {
+          console.log("enter", value);
           onSubmit(
             action.type?.name!,
             activeSuggestions.find((s) => s.id === value)!,
@@ -66,11 +67,8 @@
         suggestions = await getMatchingLabels(filter || "");
         break;
       }
-      case "tool": {
-        suggestions = [
-          { id: "youtube-video", name: "Insert YouTube Video" },
-          { id: "chat", name: "New Chat" },
-        ];
+      case "command": {
+        suggestions = Object.values(COMMANDS);
         break;
       }
       default: {
@@ -104,8 +102,6 @@
       value = activeSuggestions[index].id;
     }
   }
-
-  $inspect("action", action, value);
 </script>
 
 {#if open}

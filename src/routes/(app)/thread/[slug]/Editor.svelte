@@ -17,9 +17,11 @@
     ActionKind,
     autocomplete,
     type AutocompleteAction,
+    closeAutocomplete,
     type Options,
   } from "prosemirror-autocomplete";
   import AutocompleteMenu from "./AutocompleteMenu.svelte";
+  import type { COMMANDS } from "./$data";
 
   type Props = {
     content: string;
@@ -28,7 +30,7 @@
     onFocus: () => void;
     onSubmit: (value: string) => void;
     onLabelSubmit: (label: string) => void;
-    onToolSubmit: (command: string) => void;
+    onCommandSubmit: (commandId: keyof typeof COMMANDS) => void;
   };
   let {
     content,
@@ -37,7 +39,7 @@
     onFocus,
     onSubmit,
     onLabelSubmit,
-    onToolSubmit,
+    onCommandSubmit,
   }: Props = $props();
 
   let editor: HTMLDivElement = $state(null)!;
@@ -59,12 +61,12 @@
   export const autocompleteOptions: Options = {
     triggers: [
       { name: "hashtag", trigger: "#", cancelOnFirstSpace: true },
-      { name: "tool", trigger: "/", cancelOnFirstSpace: true },
+      { name: "command", trigger: "/", cancelOnFirstSpace: true },
     ],
     reducer: (action) => {
-      autocompleteAction = action;
       console.log("reducer", action);
-      return action.kind !== ActionKind.enter;
+      autocompleteAction = action;
+      return true;
     },
   };
 
@@ -72,12 +74,14 @@
     type: string,
     selected: { id: string; name: string },
   ) {
+    closeAutocomplete(view);
+    console.log("handleAutocompleteSubmit", type, selected);
     switch (type) {
       case "hashtag":
         onLabelSubmit(selected.name);
         break;
-      case "tool":
-        onToolSubmit(selected.id);
+      case "command":
+        onCommandSubmit(selected.id as keyof typeof COMMANDS);
         break;
       default:
         break;

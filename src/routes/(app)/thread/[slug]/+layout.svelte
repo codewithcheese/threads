@@ -24,11 +24,14 @@
     console.log("handleSubmit", index);
     if (index + 1 >= data.notes.length) {
       data.notes.push({
-        id: nanoid(10),
-        content: "",
-        labels: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        note: {
+          id: nanoid(10),
+          content: "",
+          labels: [],
+          chatId: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
       });
     }
     focusIndex = index + 1;
@@ -52,7 +55,7 @@
 
 <div class="mx-auto flex w-[100ch] flex-row items-center gap-2 pb-2 pt-2">
   <h1 class="shrink-0 whitespace-nowrap text-3xl font-semibold tracking-tight">
-    {data.pageName}
+    {data.labelName}
   </h1>
   <Button variant="ghost" class="cursor-pointer" onclick={handleChatClick}>
     <MessageCircleIcon size="24" class="text-gray-700" />
@@ -60,7 +63,7 @@
 </div>
 <main class="flex flex-1 flex-col overflow-y-auto">
   <div class="mx-auto w-[100ch]">
-    {#each data.notes as note, index (note.id)}
+    {#each data.notes as { note }, index (note.id)}
       <div class="flex flex-row items-center py-1">
         <div
           class={cn(
@@ -74,7 +77,7 @@
           <NoteWidget
             focused={focusIndex === index}
             onFocus={() => {
-              console.log("layout onFocus");
+              // console.log("layout onFocus");
               focusIndex = index;
             }}
             onSubmit={() => handleSubmit(index)}
