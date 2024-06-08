@@ -13,14 +13,22 @@
 
   let {
     note,
+    focusLeft = undefined,
+    focusDirection = undefined,
     focused = false,
     onFocus = () => {},
+    onFocusPrevious = () => {},
+    onFocusNext = () => {},
     onSubmit = () => {},
   }: {
     note?: Note;
+    focusLeft?: number;
+    focusDirection?: "top" | "bottom";
     focused: boolean;
     onFocus: () => void;
     onSubmit: () => void;
+    onFocusPrevious: (left: number) => void;
+    onFocusNext: (left: number) => void;
   } = $props();
 
   let activeNote = $derived(note ? note : emptyNote());
@@ -86,9 +94,13 @@
 
 {#if !focused && activeNote.content.trim() === ""}{:else}
   <Editor
+    {focusDirection}
+    {focusLeft}
     {focused}
     content={activeNote.content}
     {onFocus}
+    {onFocusPrevious}
+    {onFocusNext}
     onSubmit={handleSubmit}
     onLabelSubmit={handleLabelSubmit}
     onCommandSubmit={handleCommandSubmit}

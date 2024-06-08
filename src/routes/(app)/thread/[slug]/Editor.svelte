@@ -22,9 +22,17 @@
   import AutocompleteMenu from "./AutocompleteMenu.svelte";
   import type { COMMANDS } from "./$data";
   import { placeholder } from "$lib/prosemirror/placeholder";
+  import {
+    findDocumentPos,
+    findFirstTextRange,
+    findLastTextPos,
+    findLastTextRange,
+  } from "$lib/prosemirror/pos";
 
   type Props = {
     content: string;
+    focusLeft?: number;
+    focusDirection?: "top" | "bottom";
     focused?: boolean;
     resetOnSubmit?: boolean;
     onFocus?: () => void;
@@ -34,15 +42,21 @@
     ) => boolean | void | Promise<void>;
     onLabelSubmit: (label: string) => void;
     onCommandSubmit: (commandId: keyof typeof COMMANDS) => void;
+    onFocusNext?: (left: number) => void;
+    onFocusPrevious?: (left: number) => void;
   };
   let {
     content,
+    focusLeft,
+    focusDirection,
     focused = true,
     resetOnSubmit = false,
     onFocus,
     onSubmit,
     onLabelSubmit,
     onCommandSubmit,
+    onFocusPrevious = () => {},
+    onFocusNext = () => {},
   }: Props = $props();
 
   let editor: HTMLDivElement = $state(null)!;
@@ -51,10 +65,25 @@
   $effect(() => {
     if (view && focused) {
       view.focus();
-      let lastPos = view.state.doc.content.size;
-      const tr = view.state.tr.setSelection(
-        TextSelection.create(view.state.doc, lastPos),
-      );
+      // console.log("focus left", focusLeft, "focus direction", focusDirection);
+      let tr = view.state.tr;
+      if (focusLeft != null && focusDirection != null) {
+        let pos = findDocumentPos(view, focusLeft, focusDirection);
+        // console.log("findDocumentPos", pos);
+        tr.setSelection(
+          TextSelection.create(
+            view.state.doc,
+            pos ?? findLastTextPos(view.state) ?? 0,
+          ),
+        );
+      } else {
+        tr.setSelection(
+          TextSelection.create(
+            view.state.doc,
+            findLastTextPos(view.state) ?? 0,
+          ),
+        );
+      }
       view.dispatch(tr);
     }
   });
@@ -89,6 +118,42 @@
       default:
         break;
     }
+  }
+
+  function handleKeyDown(view: EditorView, event: KeyboardEvent) {
+    const { state } = view;
+    const { selection } = state;
+
+    if (
+      event.key === "ArrowUp" &&
+      selection.empty &&
+      view.endOfTextblock("up")
+    ) {
+      const range = findFirstTextRange(state);
+      // if cursor in range
+      if (range && selection.from >= range.from && selection.from <= range.to) {
+        const { left } = view.coordsAtPos(view.state.selection.from);
+        // console.log("onFocusPrevious", left);
+        onFocusPrevious(left);
+        return true;
+      }
+    }
+
+    if (
+      event.key === "ArrowDown" &&
+      selection.empty &&
+      view.endOfTextblock("down")
+    ) {
+      const range = findLastTextRange(state);
+      if (range && selection.from >= range.from && selection.from <= range.to) {
+        const { left } = view.coordsAtPos(view.state.selection.from);
+        // console.log("onFocusNext", left);
+        onFocusNext(left);
+        return true;
+      }
+    }
+
+    return false;
   }
 
   baseKeymap["Enter"] = chainCommands(
@@ -135,7 +200,10 @@
       plugins: [
         // labelDecorationPlugin,
         ...autocomplete(autocompleteOptions),
-        keymap({ Enter: handleSubmit }),
+        keymap({
+          "Shift-Enter": splitBlockAs(() => ({ type: schema.nodes.paragraph })),
+          Enter: handleSubmit,
+        }),
         history(),
         keymap({ "Mod-z": undo, "Mod-shift-z": redo }),
         keymap(baseKeymap),
@@ -161,6 +229,7 @@
         focus: onFocus,
         blur: handleBlur,
       },
+      handleKeyDown,
     });
     if (focused) {
       view.focus();

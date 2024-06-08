@@ -13,6 +13,8 @@
 
   let { data } = $props();
   let focusIndex = $state(0);
+  let focusLeft: number | undefined = $state(undefined);
+  let focusDirection: "top" | "bottom" | undefined = $state(undefined);
 
   async function handleDelete(id: string) {
     await deleteNote(id);
@@ -55,9 +57,29 @@
     console.log("handleWidgetClick", index);
     focusIndex = index;
   }
+
+  function handleOnFocus(index: number) {
+    focusIndex = index;
+  }
+
+  function handleOnFocusPrevious(index: number, left: number) {
+    if (index > 0) {
+      focusIndex = index - 1;
+      focusLeft = left;
+      focusDirection = "bottom";
+    }
+  }
+
+  function handleOnFocusNext(index: number, left: number) {
+    if (index < data.notes.length - 1) {
+      focusIndex = index + 1;
+      focusLeft = left;
+      focusDirection = "top";
+    }
+  }
 </script>
 
-<div class="mx-auto flex w-[100ch] flex-row items-center gap-2 pb-2 pt-2">
+<div class="mx-auto mt-10 flex w-[100ch] flex-row items-center gap-2 pb-2">
   <h1 class="shrink-0 whitespace-nowrap text-3xl font-semibold tracking-tight">
     {data.labelName}
   </h1>
@@ -78,16 +100,18 @@
           <XIcon onclick={() => handleDelete(note.id)} size={16} />
         </div>
         <div
+          role="listitem"
           class="hover:border-3 w-full hover:border-amber-200"
-          onclick={() => handleWidgetClick(index)}
+          onclick={handleWidgetClick.bind(null, index)}
         >
           <NoteWidget
+            {focusLeft}
+            {focusDirection}
             focused={focusIndex === index}
-            onFocus={() => {
-              // console.log("layout onFocus");
-              focusIndex = index;
-            }}
-            onSubmit={() => handleSubmit(index)}
+            onFocus={handleOnFocus.bind(null, index)}
+            onFocusPrevious={handleOnFocusPrevious.bind(null, index)}
+            onFocusNext={handleOnFocusNext.bind(null, index)}
+            onSubmit={handleSubmit.bind(null, index)}
             {note}
           />
         </div>
