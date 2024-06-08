@@ -7,21 +7,21 @@
     TableRow,
   } from "$components/ui/table/index";
   import { page } from "$app/stores";
-  import { addService } from "../$data.js";
+  // import { addService } from "../$data.js";
   import { toast } from "svelte-french-toast";
   import { goto } from "$app/navigation";
   import { DialogHeader, DialogTitle } from "$components/ui/dialog/index.js";
 
   async function onSelect(provider: Provider) {
-    try {
-      const service = await addService(provider);
-      if (!service) {
-        return toast.error("Failed to add service");
-      }
-      await goto(`/project/${$page.params.id}/config/${service.id}`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Unknown error");
-    }
+    // try {
+    //   const service = await addService(provider);
+    //   if (!service) {
+    //     return toast.error("Failed to add service");
+    //   }
+    //   await goto(`/project/${$page.params.id}/config/${service.id}`);
+    // } catch (e) {
+    //   toast.error(e instanceof Error ? e.message : "Unknown error");
+    // }
   }
 </script>
 

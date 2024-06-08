@@ -25,13 +25,13 @@
   import { Label } from "$components/ui/label/index";
   import { Input } from "$components/ui/input/index";
   import { type Provider, Providers, providersById } from "$lib/providers";
-  import {
-    deleteService,
-    replaceModels,
-    toggleAllVisible,
-    toggleVisible,
-    updateService,
-  } from "../$data";
+  // import {
+  //   deleteService,
+  //   replaceModels,
+  //   toggleAllVisible,
+  //   toggleVisible,
+  //   updateService,
+  // } from "../$data";
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
 
@@ -48,7 +48,7 @@
   let provider: Provider = $derived(providersById[service.providerId]);
 
   async function save() {
-    await updateService(service);
+    // await updateService(service);
   }
 
   async function onBack() {
@@ -57,7 +57,7 @@
 
   async function onDelete() {
     await onBack();
-    await deleteService(service);
+    // await deleteService(service);
   }
 
   async function fetchModels() {
@@ -83,7 +83,7 @@
         return;
       }
       const newModels = (await resp.json()) as any[];
-      await replaceModels(service, newModels);
+      // await replaceModels(service, newModels);
     } finally {
       modelsLoading = false;
     }
@@ -199,7 +199,7 @@
             class="p-1 text-sm"
             variant="ghost"
             onclick={async () => {
-              await toggleAllVisible(service, 1);
+              // await toggleAllVisible(service, 1);
             }}
           >
             Show All
@@ -208,7 +208,7 @@
             class="p-1 text-sm"
             variant="ghost"
             onclick={async () => {
-              await toggleAllVisible(service, 0);
+              // await toggleAllVisible(service, 0);
             }}
           >
             Hide All
@@ -227,7 +227,9 @@
                   "cursor-pointer",
                   model.visible === 1 ? "" : "opacity-50",
                 )}
-                onclick={() => toggleVisible(service, model)}
+                onclick={() => {
+                  // toggleVisible(service, model)
+                }}
               >
                 <TableCell class="p-1 pl-4 font-normal">{model.name}</TableCell>
                 <TableCell class="p-1">

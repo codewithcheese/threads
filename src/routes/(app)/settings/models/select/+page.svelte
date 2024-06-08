@@ -4,7 +4,7 @@
   import { PlusIcon } from "lucide-svelte";
   import { providersById } from "$lib/providers";
   import { TableHeader } from "$components/ui/table/index.js";
-  import type { ServicesView } from "../$data";
+  // import type { ServicesView } from "../$data";
   import { DialogTitle } from "$components/ui/dialog";
   import { DialogHeader } from "$components/ui/dialog/index.js";
   import { goto } from "$app/navigation";
@@ -12,7 +12,7 @@
 
   let { data } = $props();
 
-  function onSelect(service: ServicesView[number]) {
+  function onSelect(service: any /*ServicesView[number]*/) {
     goto(`/project/${$page.params.id}/config/${service.id}`);
   }
 

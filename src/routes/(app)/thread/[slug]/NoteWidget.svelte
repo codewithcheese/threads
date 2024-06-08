@@ -106,16 +106,6 @@
     onCommandSubmit={handleCommandSubmit}
   />
 {/if}
-{#if activeNote.chatId}
-  <a href={`/thread/${$page.params.slug}/chat/${activeNote.chatId}`}>
-    <Button variant="outline" class="p-1 px-4 text-sm">
-      <MessageCircleIcon class="h-4 w-4" />
-    </Button>
-  </a>
-{/if}
-{#if activeCommand === "youtube-video"}
-  <div class="w-full">Youtube</div>
-{/if}
 <div>
   {#each activeNote.labels as label}
     <Button
@@ -127,3 +117,14 @@
     </Button>
   {/each}
 </div>
+
+{#if activeNote.chatId}
+  <a href={`/thread/${$page.params.slug}/chat/${activeNote.chatId}`}>
+    <Button variant="outline" class="p-1 px-4 text-sm">
+      <MessageCircleIcon class="h-4 w-4" />
+    </Button>
+  </a>
+{/if}
+{#if activeCommand === "youtube-video"}
+  <div class="w-full">Youtube</div>
+{/if}
