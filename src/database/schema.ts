@@ -106,8 +106,8 @@ export const chatTable = sqliteTable("chats", {
   updatedAt: text("updatedAt").default(sql`(CURRENT_TIMESTAMP)`),
 });
 
-export const chatMessageTable = sqliteTable(
-  "chatMessages",
+export const messagesTable = sqliteTable(
+  "messages",
   {
     id: text("id").notNull(),
     chatId: text("chatId")
@@ -116,8 +116,9 @@ export const chatMessageTable = sqliteTable(
     sender: text("sender"),
     recipients: text("recipients", { mode: "json" })
       .$type<string[]>()
-      .default([]),
-    role: text("role").notNull(),
+      .default([])
+      .notNull(),
+    role: text("role", { enum: ["user", "assistant", "system"] }).notNull(),
     content: text("content"),
     data: text("data", { mode: "json" }),
     createdAt: text("createdAt").default(sql`(CURRENT_TIMESTAMP)`),
@@ -135,7 +136,7 @@ export const chatMessageTable = sqliteTable(
 export type Note = InferSelectModel<typeof noteTable>;
 export type Chatbot = InferSelectModel<typeof chatbotTable>;
 export type Chat = InferSelectModel<typeof chatTable>;
-export type ChatMessage = InferSelectModel<typeof chatMessageTable>;
+export type ChatMessage = InferSelectModel<typeof messagesTable>;
 
 /**
  * Relationships
@@ -157,12 +158,12 @@ export const noteLabelsRelations = relations(noteLabelsTable, ({ one }) => ({
 }));
 
 export const chatRelations = relations(chatTable, ({ many }) => ({
-  chatMessages: many(chatMessageTable),
+  messages: many(messagesTable),
 }));
 
-export const chatMessageRelations = relations(chatMessageTable, ({ one }) => ({
+export const messageRelations = relations(messagesTable, ({ one }) => ({
   chat: one(chatTable, {
-    fields: [chatMessageTable.chatId],
+    fields: [messagesTable.chatId],
     references: [chatTable.id],
   }),
 }));

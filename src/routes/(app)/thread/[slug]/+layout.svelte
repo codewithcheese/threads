@@ -12,7 +12,6 @@
   import { cn } from "$lib/cn";
 
   let { data } = $props();
-
   let focusIndex = $state(0);
 
   async function handleDelete(id: string) {
@@ -51,6 +50,11 @@
     const id = await createChat($page.params.slug);
     await goto(`/thread/${$page.params.slug}/chat/${id}`);
   }
+
+  function handleWidgetClick(index: number) {
+    console.log("handleWidgetClick", index);
+    focusIndex = index;
+  }
 </script>
 
 <div class="mx-auto flex w-[100ch] flex-row items-center gap-2 pb-2 pt-2">
@@ -64,16 +68,19 @@
 <main class="flex flex-1 flex-col overflow-y-auto">
   <div class="mx-auto w-[100ch]">
     {#each data.notes as { note }, index (note.id)}
-      <div class="flex flex-row items-center py-1">
+      <div class="flex flex-row py-1">
         <div
           class={cn(
-            "-ml-8 cursor-pointer pr-4 text-gray-500",
+            "-ml-8 cursor-pointer pr-4 pt-1 text-gray-500",
             focusIndex === index ? "opacity-100" : "opacity-0",
           )}
         >
           <XIcon onclick={() => handleDelete(note.id)} size={16} />
         </div>
-        <div class="w-full">
+        <div
+          class="hover:border-3 w-full hover:border-amber-200"
+          onclick={() => handleWidgetClick(index)}
+        >
           <NoteWidget
             focused={focusIndex === index}
             onFocus={() => {
@@ -88,11 +95,4 @@
     {/each}
   </div>
 </main>
-<!--<div class="sticky bottom-0 mx-auto w-[100ch] pb-4 pt-2">-->
-<!--  <Card>-->
-<!--    <CardContent class="p-2">-->
-<!--      <NoteWidget />-->
-<!--    </CardContent>-->
-<!--  </Card>-->
-<!--</div>-->
 <slot />

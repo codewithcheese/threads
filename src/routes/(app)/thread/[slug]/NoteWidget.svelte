@@ -7,7 +7,9 @@
   import { slugify } from "$lib/slugify";
   import { Button } from "$components/ui/button";
   import toast from "svelte-french-toast";
-  import Chat from "./Chat.svelte";
+  import { page } from "$app/stores";
+  import { MessageCircleIcon } from "lucide-svelte";
+  import type { Mention } from "$lib/prosemirror/schema";
 
   let {
     note,
@@ -23,7 +25,6 @@
 
   let activeNote = $derived(note ? note : emptyNote());
   let activeCommand: keyof typeof COMMANDS | null = $state(null);
-  let chatOpen = $state(false);
 
   function emptyNote(): Note {
     return {
@@ -36,7 +37,7 @@
     };
   }
 
-  async function handleSubmit(value: string) {
+  async function handleSubmit(value: string, _mentions: Mention[]) {
     if (activeNote.content !== value) {
       activeNote.content = value;
       await upsertNote(activeNote);
@@ -75,7 +76,7 @@
     }
     console.log("creating chat");
     activeNote.chatId = await createChat(activeNote.id);
-    chatOpen = true;
+    await goto(`/thread/${$page.params.slug}/chat/${activeNote.chatId}`);
   }
 
   async function handleLabelClick(label: string) {
@@ -83,23 +84,25 @@
   }
 </script>
 
-<Editor
-  {focused}
-  content={activeNote.content}
-  {onFocus}
-  onSubmit={handleSubmit}
-  onLabelSubmit={handleLabelSubmit}
-  onCommandSubmit={handleCommandSubmit}
-/>
-{#if activeCommand === "youtube-video"}
-  <div class="w-full">Youtube</div>
+{#if !focused && activeNote.content.trim() === ""}{:else}
+  <Editor
+    {focused}
+    content={activeNote.content}
+    {onFocus}
+    onSubmit={handleSubmit}
+    onLabelSubmit={handleLabelSubmit}
+    onCommandSubmit={handleCommandSubmit}
+  />
 {/if}
 {#if activeNote.chatId}
-  <Chat
-    id={activeNote.chatId}
-    open={chatOpen}
-    onClose={() => (chatOpen = false)}
-  />
+  <a href={`/thread/${$page.params.slug}/chat/${activeNote.chatId}`}>
+    <Button variant="outline" class="p-1 px-4 text-sm">
+      <MessageCircleIcon class="h-4 w-4" />
+    </Button>
+  </a>
+{/if}
+{#if activeCommand === "youtube-video"}
+  <div class="w-full">Youtube</div>
 {/if}
 <div>
   {#each activeNote.labels as label}

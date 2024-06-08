@@ -12,9 +12,8 @@
   } from "$lib/prosemirror/commands";
   import { EditorView } from "prosemirror-view";
   import { onMount } from "svelte";
-  import { schema } from "$lib/prosemirror/schema";
+  import { getMentions, type Mention, schema } from "$lib/prosemirror/schema";
   import {
-    ActionKind,
     autocomplete,
     type AutocompleteAction,
     closeAutocomplete,
@@ -22,19 +21,23 @@
   } from "prosemirror-autocomplete";
   import AutocompleteMenu from "./AutocompleteMenu.svelte";
   import type { COMMANDS } from "./$data";
+  import { placeholder } from "$lib/prosemirror/placeholder";
 
   type Props = {
     content: string;
-    focused: boolean;
+    focused?: boolean;
     resetOnSubmit?: boolean;
-    onFocus: () => void;
-    onSubmit: (value: string) => void;
+    onFocus?: () => void;
+    onSubmit: (
+      value: string,
+      mentions: Mention[],
+    ) => boolean | void | Promise<void>;
     onLabelSubmit: (label: string) => void;
     onCommandSubmit: (commandId: keyof typeof COMMANDS) => void;
   };
   let {
     content,
-    focused,
+    focused = true,
     resetOnSubmit = false,
     onFocus,
     onSubmit,
@@ -106,8 +109,9 @@
         newContent += child.textContent;
       }
     });
-    onSubmit(newContent);
-    if (resetOnSubmit) {
+    const mentions = getMentions(state.doc);
+    let submitResult = onSubmit(newContent, mentions);
+    if (submitResult !== false && resetOnSubmit) {
       const state = createState();
       view.updateState(state);
     }
@@ -135,6 +139,7 @@
         history(),
         keymap({ "Mod-z": undo, "Mod-shift-z": redo }),
         keymap(baseKeymap),
+        placeholder("Write something, or press '/' for commands."),
       ],
     });
   }
@@ -170,3 +175,10 @@
   onSubmit={handleAutocompleteSubmit}
   action={autocompleteAction}
 />
+
+<style lang="postcss">
+  :global(.ProseMirror[data-placeholder]::before) {
+    @apply pointer-events-none absolute text-gray-500;
+    content: attr(data-placeholder);
+  }
+</style>
