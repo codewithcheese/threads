@@ -84,40 +84,51 @@
   }
 </script>
 
-{#if !focused && activeNote.content.trim() === ""}{:else}
-  <Editor
-    {focusDirection}
-    {focusLeft}
-    {focused}
-    content={activeNote.content}
-    {onFocus}
-    {onFocusPrevious}
-    {onFocusNext}
-    onChange={handleChange}
-    onSubmit={handleSubmit}
-    onLabelSubmit={handleLabelSubmit}
-    onCommandSubmit={handleCommandSubmit}
-  />
-{/if}
-<div>
-  {#each activeNote.labels as label}
-    <Button
-      class="h-6 rounded-3xl p-1 font-normal"
-      variant="ghost"
-      onclick={() => handleLabelClick(label)}
-    >
-      {label}
-    </Button>
-  {/each}
+<div class="note">
+  {#if !focused && activeNote.content.trim() === ""}{:else}
+    <Editor
+      {focusDirection}
+      {focusLeft}
+      {focused}
+      content={activeNote.content}
+      {onFocus}
+      {onFocusPrevious}
+      {onFocusNext}
+      onChange={handleChange}
+      onSubmit={handleSubmit}
+      onLabelSubmit={handleLabelSubmit}
+      onCommandSubmit={handleCommandSubmit}
+    />
+  {/if}
+  <div>
+    {#each activeNote.labels as label}
+      <Button
+        class="h-6 rounded-3xl p-1 font-normal"
+        variant="ghost"
+        onclick={() => handleLabelClick(label)}
+      >
+        {label}
+      </Button>
+    {/each}
+  </div>
+
+  {#if activeNote.chatId}
+    <a href={`/thread/${$page.params.slug}/chat/${activeNote.chatId}`}>
+      <Button variant="outline" class="p-1 px-4 text-sm">
+        <MessageCircleIcon class="h-4 w-4" />
+      </Button>
+    </a>
+  {/if}
+  {#if activeCommand === "youtube-video"}
+    <div class="w-full">Youtube</div>
+  {/if}
 </div>
 
-{#if activeNote.chatId}
-  <a href={`/thread/${$page.params.slug}/chat/${activeNote.chatId}`}>
-    <Button variant="outline" class="p-1 px-4 text-sm">
-      <MessageCircleIcon class="h-4 w-4" />
-    </Button>
-  </a>
-{/if}
-{#if activeCommand === "youtube-video"}
-  <div class="w-full">Youtube</div>
-{/if}
+<style lang="postcss">
+  :global(.note) {
+    @apply leading-snug;
+  }
+  :global(.note p) {
+    @apply pb-2;
+  }
+</style>

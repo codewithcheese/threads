@@ -89,7 +89,7 @@
 <main class="flex flex-1 flex-col overflow-y-auto">
   <div class="mx-auto w-[100ch]">
     {#each data.notes as { note }, index (note.id)}
-      <div class="flex flex-row py-1">
+      <div class="flex flex-row pb-3">
         <div
           class={cn(
             "-ml-8 cursor-pointer pr-4 pt-1 text-gray-500",

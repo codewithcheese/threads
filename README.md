@@ -4,10 +4,10 @@ Threadz the note **working** app.
 
 ## TODO
 
-- [ ] Save note on change
+- [x] Save note on change
 - [ ] Insert Youtube video
 - [ ] Insert URL
-- [ ] Enter for new paragraph, ctrl+enter for new note
+- [x] Enter for new paragraph, ctrl+enter for new note
 - [ ] Rename labels to tags
 - [ ] Tana style tags 
 

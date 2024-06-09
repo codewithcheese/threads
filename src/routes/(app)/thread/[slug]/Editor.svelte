@@ -12,7 +12,7 @@
   } from "$lib/prosemirror/commands";
   import { EditorView } from "prosemirror-view";
   import { onMount } from "svelte";
-  import { getMentions, type Mention, schema } from "$lib/prosemirror/schema";
+  import { schema } from "$lib/prosemirror/schema";
   import {
     autocomplete,
     type AutocompleteAction,
@@ -223,7 +223,7 @@
         ...autocomplete(autocompleteOptions),
         keymap({
           "Shift-Enter": splitBlockAs(() => ({ type: schema.nodes.paragraph })),
-          Enter: handleSubmit,
+          "Mod-Enter": handleSubmit,
         }),
         history(),
         keymap({ "Mod-z": undo, "Mod-shift-z": redo }),
