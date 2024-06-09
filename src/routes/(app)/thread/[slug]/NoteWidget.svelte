@@ -1,15 +1,13 @@
 <script lang="ts">
   import type { Note } from "$database/schema";
-  import { COMMANDS, createChat, upsertNote } from "./$data";
+  import { COMMANDS, createChat, createEmptyNote, upsertNote } from "./$data";
   import Editor from "./Editor.svelte";
   import { goto, invalidate } from "$app/navigation";
-  import { nanoid } from "nanoid";
   import { slugify } from "$lib/slugify";
   import { Button } from "$components/ui/button";
   import toast from "svelte-french-toast";
   import { page } from "$app/stores";
   import { MessageCircleIcon } from "lucide-svelte";
-  import type { Mention } from "$lib/prosemirror/schema";
 
   let {
     note,
@@ -31,26 +29,20 @@
     onFocusNext: (left: number) => void;
   } = $props();
 
-  let activeNote = $derived(note ? note : emptyNote());
+  let activeNote = $derived(note ? note : createEmptyNote());
   let activeCommand: keyof typeof COMMANDS | null = $state(null);
 
-  function emptyNote(): Note {
-    return {
-      id: nanoid(10),
-      content: "",
-      labels: [],
-      chatId: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-  }
-
-  async function handleSubmit(value: string, _mentions: Mention[]) {
+  async function handleChange(value: string) {
+    console.log("handleSubmit", value);
     if (activeNote.content !== value) {
       activeNote.content = value;
       await upsertNote(activeNote);
       await invalidate("view:notes");
     }
+  }
+
+  async function handleSubmit(value: string) {
+    await handleChange(value);
     onSubmit();
   }
 
@@ -101,6 +93,7 @@
     {onFocus}
     {onFocusPrevious}
     {onFocusNext}
+    onChange={handleChange}
     onSubmit={handleSubmit}
     onLabelSubmit={handleLabelSubmit}
     onCommandSubmit={handleCommandSubmit}

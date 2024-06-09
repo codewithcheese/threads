@@ -36,10 +36,8 @@
     focused?: boolean;
     resetOnSubmit?: boolean;
     onFocus?: () => void;
-    onSubmit: (
-      value: string,
-      mentions: Mention[],
-    ) => boolean | void | Promise<void>;
+    onChange?: (value: string) => void;
+    onSubmit: (value: string) => boolean | void | Promise<void>;
     onLabelSubmit: (label: string) => void;
     onCommandSubmit: (commandId: keyof typeof COMMANDS) => void;
     onFocusNext?: (left: number) => void;
@@ -52,6 +50,7 @@
     focused = true,
     resetOnSubmit = false,
     onFocus,
+    onChange,
     onSubmit,
     onLabelSubmit,
     onCommandSubmit,
@@ -63,6 +62,7 @@
   let view: EditorView = $state(null)!;
 
   $effect(() => {
+    // on focused
     if (view && focused) {
       view.focus();
       // console.log("focus left", focusLeft, "focus direction", focusDirection);
@@ -174,8 +174,8 @@
         newContent += child.textContent;
       }
     });
-    const mentions = getMentions(state.doc);
-    let submitResult = onSubmit(newContent, mentions);
+    // const mentions = getMentions(state.doc);
+    let submitResult = onSubmit(newContent);
     if (submitResult !== false && resetOnSubmit) {
       const state = createState();
       view.updateState(state);
@@ -187,15 +187,36 @@
     autocompleteAction = null;
   }
 
-  function createDoc() {
-    return schema.node("doc", null, [
-      schema.nodes.paragraph.create(null, content ? schema.text(content) : []),
-    ]);
+  function fromContent(content: string | undefined) {
+    let paragraphs;
+    if (content) {
+      paragraphs = content
+        .split("\n\n")
+        .map((text) =>
+          schema.nodes.paragraph.create({}, text ? schema.text(text) : []),
+        );
+    } else {
+      paragraphs = [schema.nodes.paragraph.create({}, [])];
+    }
+    return schema.node("doc", null, paragraphs);
+  }
+
+  function toContent(state: EditorState) {
+    let newContent = "";
+    state.doc.descendants((child) => {
+      if (newContent && child.type === schema.nodes.paragraph) {
+        newContent += "\n\n";
+      }
+      if (child.type === schema.nodes.text) {
+        newContent += child.textContent;
+      }
+    });
+    return newContent;
   }
 
   function createState() {
     return EditorState.create({
-      doc: createDoc(),
+      doc: fromContent(content),
       schema,
       plugins: [
         // labelDecorationPlugin,
@@ -220,6 +241,9 @@
         let oldState = view.state;
         let newState = oldState.apply(transaction);
         view.updateState(newState);
+        if (transaction.docChanged && onChange) {
+          onChange(toContent(newState));
+        }
         // console.log("dispatchTransaction", transaction);
         // if (transaction.getMeta("pointer-events")) {
         //   onFocus();
