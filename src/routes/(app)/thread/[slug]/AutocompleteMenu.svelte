@@ -1,6 +1,7 @@
 <script lang="ts">
   import {
     Command,
+    CommandEmpty,
     CommandGroup,
     CommandItem,
     CommandList,
@@ -10,79 +11,109 @@
     ActionKind,
     type AutocompleteAction,
   } from "prosemirror-autocomplete";
-  import { COMMANDS, getMatchingLabels } from "./$data";
+  import { getMatchingLabels } from "./$data";
   import { untrack } from "svelte";
+  import { commands, triggers } from "./$autocomplete";
+  import toast from "svelte-french-toast";
+
+  type Option = {
+    id: string;
+    name: string;
+    group: string;
+    visible?: boolean;
+  };
 
   type Props = {
     action: AutocompleteAction | null;
-    onSubmit: (type: string, selected: Suggestion) => void;
+    onSubmit: (type: string, id: string) => void;
   };
   let { action, onSubmit }: Props = $props();
 
-  type Suggestion = { id: string; name: string };
-
   let open = $derived(action && action.kind !== ActionKind.close);
   let filter = $derived((action && action.filter) || "");
-  let title = $derived.by(() => {
-    switch (action && action.type?.name) {
-      case "hashtag":
-        return "Labels";
-      case "command":
-        return "Commands";
-      default:
-        return "Suggestions";
+  let trigger = $derived(triggers.find((t) => t.name === action?.type?.name));
+
+  $inspect("trigger", trigger);
+
+  let options: Option[] = $state([]);
+  let optionsGrouped = $derived.by(() => {
+    let grouped: Record<string, Option[]> = {};
+    for (const suggestion of options) {
+      if (!suggestion.visible) {
+        continue;
+      }
+      if (!grouped[suggestion.group]) {
+        grouped[suggestion.group] = [];
+      }
+      grouped[suggestion.group].push(suggestion);
     }
+    return grouped;
   });
-  let suggestions: Suggestion[] = $state([]);
-  let activeSuggestions: Suggestion[] = $derived(
-    suggestions.filter((s) =>
-      s.name.toLowerCase().includes(filter.toLowerCase()),
-    ),
-  );
+
   let value: string | undefined = $state(undefined);
 
   $effect(() => {
-    console.log("action effect", action);
     if (action) {
-      untrack(() => {
-        if (open) {
-          updateSelectedIndex();
-          updateSuggestions(action!.type?.name!);
-          moveSuggestions();
-        }
-        if (action && value && action.kind === ActionKind.enter) {
-          console.log("enter", value);
-          onSubmit(
-            action.type?.name!,
-            activeSuggestions.find((s) => s.id === value)!,
-          );
-        }
-      });
+      untrack(() => handleActionUpdate(action!));
     }
   });
 
-  async function updateSuggestions(type: string) {
+  function updateVisibleOptions() {
+    for (const option of options) {
+      option.visible = option.name.toLowerCase().includes(filter.toLowerCase());
+    }
+  }
+
+  function handleActionUpdate(action: AutocompleteAction) {
+    if (open) {
+      fetchOptions(action!.type?.name!);
+      updateVisibleOptions();
+      updateSelectedValue();
+      moveAutocompleteMenu();
+    }
+    if (trigger && trigger.allowNewValues && action?.filter) {
+      value = action.filter;
+    }
+    if (action && action.kind === ActionKind.enter) {
+      if (trigger && trigger.allowNewValues) {
+        if (!value && !filter) {
+          return;
+        }
+        onSubmit(action.type?.name!, value ?? filter);
+      } else if (trigger && !trigger.allowNewValues) {
+        if (!value) {
+          toast.error("No option selected");
+          return;
+        }
+        onSubmit(action.type?.name!, value);
+      }
+    }
+  }
+
+  async function fetchOptions(type: string) {
     switch (type) {
-      case "hashtag": {
-        suggestions = await getMatchingLabels(filter || "");
+      case "tag": {
+        options = await getMatchingLabels(filter || "");
         break;
       }
       case "command": {
-        suggestions = Object.values(COMMANDS);
+        options = commands;
         break;
       }
       default: {
-        suggestions = [];
+        options = [];
         break;
       }
     }
-    if (!suggestions.find((s) => s.id === value)) {
+    if (!options.find((s) => s.id === value)) {
       value = undefined;
     }
   }
 
-  function moveSuggestions() {
-    const suggestion = document.querySelector("#suggestions") as HTMLDivElement;
+  function moveAutocompleteMenu() {
+    const suggestion = document.querySelector(
+      "#autocomplete-menu",
+    ) as HTMLDivElement;
     const rect = document
       .querySelector(".autocomplete")
       ?.getBoundingClientRect();
@@ -91,41 +122,56 @@
     suggestion.style.left = `${rect.left}px`;
   }
 
-  function updateSelectedIndex() {
-    if (action?.kind === ActionKind.up || action?.kind === ActionKind.down) {
-      if (activeSuggestions.length === 0) return;
-      let index = activeSuggestions.findIndex((s) => s.id === value);
-      index =
-        action?.kind === ActionKind.up
-          ? Math.max(index - 1, 0)
-          : Math.min(index + 1, activeSuggestions.length - 1);
-      value = activeSuggestions[index].id;
+  function updateSelectedValue() {
+    let startIndex = options.findIndex((s) => s.id === value);
+    if (action?.kind === ActionKind.up) {
+      let previousSuggestion = options.findLast(
+        (s, index) => index < startIndex && s.visible === true,
+      );
+      if (previousSuggestion) {
+        value = previousSuggestion.id;
+      }
+    }
+    if (action?.kind === ActionKind.down) {
+      let nextSuggestion = options.find(
+        (s, index) => index > startIndex && s.visible === true,
+      );
+      if (nextSuggestion) {
+        value = nextSuggestion.id;
+      }
     }
   }
 </script>
 
 {#if open}
-  <div>{open}</div>
   <Command
-    id="suggestions"
+    id="autocomplete-menu"
     class={cn(
       "absolute max-h-[300px] max-w-[450px] rounded-lg border shadow-md",
     )}
     {value}
-    onValueChange={(value) => {
-      console.log("onSelect", value);
-    }}
   >
-    {#if activeSuggestions.length > 0}
-      <CommandList>
-        <CommandGroup heading={title}>
-          {#each activeSuggestions as suggestion}
+    <CommandList>
+      {#if trigger && trigger.allowNewValues && filter}
+        <CommandGroup heading={`Create new ${trigger.name}`}>
+          <CommandItem value={filter}>
+            <span>{filter}</span>
+          </CommandItem>
+        </CommandGroup>
+      {:else if trigger && !trigger.allowNewValues && Object.keys(optionsGrouped).length === 0}
+        <CommandEmpty>
+          No matching {trigger ? `${trigger.name}s` : "suggestions"}.
+        </CommandEmpty>
+      {/if}
+      {#each Object.entries(optionsGrouped) as [group, items]}
+        <CommandGroup heading={group}>
+          {#each items as suggestion (suggestion.id)}
             <CommandItem value={suggestion.id}>
               <span>{suggestion.name}</span>
             </CommandItem>
           {/each}
         </CommandGroup>
-      </CommandList>
-    {/if}
+      {/each}
+    </CommandList>
   </Command>
 {/if}

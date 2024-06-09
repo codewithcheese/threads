@@ -17,10 +17,9 @@
     autocomplete,
     type AutocompleteAction,
     closeAutocomplete,
-    type Options,
   } from "prosemirror-autocomplete";
   import AutocompleteMenu from "./AutocompleteMenu.svelte";
-  import type { COMMANDS } from "./$data";
+  import { triggers } from "./$autocomplete";
   import { placeholder } from "$lib/prosemirror/placeholder";
   import {
     findDocumentPos,
@@ -38,8 +37,8 @@
     onFocus?: () => void;
     onChange?: (value: string) => void;
     onSubmit: (value: string) => boolean | void | Promise<void>;
-    onLabelSubmit: (label: string) => void;
-    onCommandSubmit: (commandId: keyof typeof COMMANDS) => void;
+    onLabelSubmit: (value: string) => void;
+    onCommandSubmit: (value: string) => void;
     onFocusNext?: (left: number) => void;
     onFocusPrevious?: (left: number) => void;
   };
@@ -60,60 +59,50 @@
 
   let editor: HTMLDivElement = $state(null)!;
   let view: EditorView = $state(null)!;
+  let autocompleteAction: AutocompleteAction | null = $state(null);
 
   $effect(() => {
     // on focused
     if (view && focused) {
       view.focus();
-      // console.log("focus left", focusLeft, "focus direction", focusDirection);
-      let tr = view.state.tr;
-      if (focusLeft != null && focusDirection != null) {
-        let pos = findDocumentPos(view, focusLeft, focusDirection);
-        // console.log("findDocumentPos", pos);
-        tr.setSelection(
-          TextSelection.create(
-            view.state.doc,
-            pos ?? findLastTextPos(view.state) ?? 0,
-          ),
-        );
-      } else {
-        tr.setSelection(
-          TextSelection.create(
-            view.state.doc,
-            findLastTextPos(view.state) ?? 0,
-          ),
-        );
-      }
-      view.dispatch(tr);
+      focusCursor();
     }
   });
 
-  let autocompleteAction: AutocompleteAction | null = $state(null);
+  function focusCursor() {
+    // console.log("focus left", focusLeft, "focus direction", focusDirection);
+    let tr = view.state.tr;
+    if (focusLeft != null && focusDirection != null) {
+      let pos = findDocumentPos(view, focusLeft, focusDirection);
+      // console.log("findDocumentPos", pos);
+      tr.setSelection(
+        TextSelection.create(
+          view.state.doc,
+          pos ?? findLastTextPos(view.state) ?? 0,
+        ),
+      );
+    } else {
+      tr.setSelection(
+        TextSelection.create(view.state.doc, findLastTextPos(view.state) ?? 0),
+      );
+    }
+    view.dispatch(tr);
+  }
 
-  export const autocompleteOptions: Options = {
-    triggers: [
-      { name: "hashtag", trigger: "#", cancelOnFirstSpace: true },
-      { name: "command", trigger: "/", cancelOnFirstSpace: true },
-    ],
-    reducer: (action) => {
-      console.log("reducer", action);
-      autocompleteAction = action;
-      return true;
-    },
-  };
-
-  function handleAutocompleteSubmit(
-    type: string,
-    selected: { id: string; name: string },
-  ) {
+  function handleAutocompleteSubmit(type: string, value: string) {
+    if (autocompleteAction) {
+      const tr = view.state.tr;
+      tr.delete(autocompleteAction.range.from, autocompleteAction.range.to);
+      view.dispatch(tr);
+    }
     closeAutocomplete(view);
-    console.log("handleAutocompleteSubmit", type, selected);
+    console.log("handleAutocompleteSubmit", type, value);
     switch (type) {
-      case "hashtag":
-        onLabelSubmit(selected.name);
+      case "tag":
+        onLabelSubmit(value);
         break;
       case "command":
-        onCommandSubmit(selected.id as keyof typeof COMMANDS);
+        onCommandSubmit(value);
         break;
       default:
         break;
@@ -123,6 +112,10 @@
   function handleKeyDown(view: EditorView, event: KeyboardEvent) {
     const { state } = view;
     const { selection } = state;
+
+    if (autocompleteAction) {
+      return;
+    }
 
     if (
       event.key === "ArrowUp" &&
@@ -220,7 +213,14 @@
       schema,
       plugins: [
         // labelDecorationPlugin,
-        ...autocomplete(autocompleteOptions),
+        ...autocomplete({
+          triggers,
+          reducer: (action) => {
+            console.log("reducer", action);
+            autocompleteAction = action;
+            return true;
+          },
+        }),
         keymap({
           "Shift-Enter": splitBlockAs(() => ({ type: schema.nodes.paragraph })),
           "Mod-Enter": handleSubmit,

@@ -9,18 +9,8 @@ import { nanoid } from "nanoid";
 import { eq, like } from "drizzle-orm";
 import { slugify } from "$lib/slugify";
 
-export type Command = {
-  id: string;
-  name: string;
-};
-
-export const COMMANDS = {
-  "new-chat": { id: "new-chat", name: "New Chat" },
-  "youtube-video": { id: "youtube-video", name: "Insert Youtube Video" },
-} as const;
-
 export async function upsertNote(note: Note) {
-  console.log("upsertNote", note);
+  // console.log("upsertNote", note);
   await useDb().transaction(async (tx) => {
     await tx
       .insert(noteTable)
@@ -60,16 +50,18 @@ export async function createChat(noteId: string) {
   return chatId;
 }
 
-export async function getMatchingLabels(slug: string) {
+export async function getMatchingLabels(label: string) {
   const labels = await useDb()
     .selectDistinct({ label: noteLabelsTable.label })
     .from(noteLabelsTable)
-    .where(like(noteLabelsTable.labelSlug, `${slug}%`))
+    .where(like(noteLabelsTable.label, `${label}%`))
     .limit(10);
-  console.log("matching labels", labels);
+  console.log("matching labels", label, labels);
   return labels.map((row) => ({
     id: row.label,
     name: row.label,
+    group: "Labels",
+    visible: true,
   }));
 }
 
