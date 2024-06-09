@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto, invalidate } from "$app/navigation";
-  import { createChat, deleteNote } from "./$data.js";
+  import { createChat, createEmptyNote, deleteNote } from "./$data.js";
   import { MessageCircleIcon, XIcon } from "lucide-svelte";
   import { page } from "$app/stores";
   import { useDb } from "$database";
@@ -8,13 +8,19 @@
   import { chatTable } from "$database/schema";
   import { Button } from "$components/ui/button";
   import NoteWidget from "./NoteWidget.svelte";
-  import { nanoid } from "nanoid";
   import { cn } from "$lib/cn";
+  import { CHAT_ENABLED } from "$lib/flags";
 
   let { data } = $props();
   let focusIndex = $state(0);
   let focusLeft: number | undefined = $state(undefined);
   let focusDirection: "top" | "bottom" | undefined = $state(undefined);
+
+  $effect(() => {
+    if (data.notes.length === 0) {
+      data.notes.push({ note: createEmptyNote() });
+    }
+  });
 
   async function handleDelete(id: string) {
     await deleteNote(id);
@@ -24,16 +30,7 @@
   async function handleSubmit(index: number) {
     console.log("handleSubmit", index);
     if (index + 1 >= data.notes.length) {
-      data.notes.push({
-        note: {
-          id: nanoid(10),
-          content: "",
-          labels: [],
-          chatId: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      });
+      data.notes.push({ note: createEmptyNote() });
     }
     focusIndex = index + 1;
   }
@@ -83,9 +80,11 @@
   <h1 class="shrink-0 whitespace-nowrap text-3xl font-semibold tracking-tight">
     {data.labelName}
   </h1>
-  <Button variant="ghost" class="cursor-pointer" onclick={handleChatClick}>
-    <MessageCircleIcon size="24" class="text-gray-700" />
-  </Button>
+  {#if CHAT_ENABLED}
+    <Button variant="ghost" class="cursor-pointer" onclick={handleChatClick}>
+      <MessageCircleIcon size="24" class="text-gray-700" />
+    </Button>
+  {/if}
 </div>
 <main class="flex flex-1 flex-col overflow-y-auto">
   <div class="mx-auto w-[100ch]">

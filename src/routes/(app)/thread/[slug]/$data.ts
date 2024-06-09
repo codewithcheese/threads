@@ -72,3 +72,14 @@ export async function getMatchingLabels(slug: string) {
     name: row.label,
   }));
 }
+
+export function createEmptyNote(): Note {
+  return {
+    id: nanoid(10),
+    content: "",
+    labels: [],
+    chatId: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+}
