@@ -10,7 +10,6 @@
   import {
     ActionKind,
     type AutocompleteAction,
-    type FromTo,
   } from "prosemirror-autocomplete";
   import { getMatchingLabels } from "./$data";
   import { untrack } from "svelte";
@@ -26,7 +25,7 @@
 
   type Props = {
     action: AutocompleteAction | null;
-    onSubmit: (type: string, id: string, range: FromTo) => void;
+    onSubmit: (type: string, id: string) => void;
   };
   let { action, onSubmit }: Props = $props();
 
@@ -80,13 +79,13 @@
         if (!value && !filter) {
           return;
         }
-        onSubmit(action.type?.name!, value ?? filter, action.range);
+        onSubmit(action.type?.name!, value ?? filter);
       } else if (trigger && !trigger.allowNewValues) {
         if (!value) {
           toast.error("No option selected");
           return;
         }
-        onSubmit(action.type?.name!, value, action.range);
+        onSubmit(action.type?.name!, value);
       }
     }
   }
