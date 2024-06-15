@@ -19,7 +19,13 @@
     type FromTo,
   } from "prosemirror-autocomplete";
   import { triggers } from "../../(app)/thread/[slug]/$autocomplete";
-  import { type Node, type NodeSpec, Schema, Slice } from "prosemirror-model";
+  import {
+    Fragment,
+    type Node,
+    type NodeSpec,
+    Schema,
+    Slice,
+  } from "prosemirror-model";
   import Tag from "./Tag.svelte";
   import { SvelteNodeView } from "./SvelteNodeView.svelte";
   import { InputRule, inputRules } from "prosemirror-inputrules";
@@ -27,11 +33,11 @@
   const noteSplitRule = new InputRule(/^---$/, (state, match, start, end) => {
     console.log("noteSplitRule", state, match, start, end);
     const { tr, doc } = state;
-    let stepMap = tr.mapping;
 
     let noteNode: Node | undefined = undefined;
     let notePos: number | null = null;
 
+    // find note parent
     doc.nodesBetween(start, end, (node, pos) => {
       if (node.type === schema.nodes.note) {
         noteNode = node;
@@ -45,53 +51,37 @@
       return null;
     }
 
-    // @ts-expect-error svelte incorrectly infers as never
-    const contentAbove = noteNode.content.cut(0, start - 2);
-    // @ts-expect-error svelte incorrectly infers as never
-    const contentBelow = noteNode.content.cut(end + 1);
+    console.log("noteNode", noteNode, notePos);
 
-    console.log("content", contentAbove, contentBelow, notePos);
+    // @ts-expect-error svelte incorrectly infers as never
+    const beforeNode = schema.nodes.note.create(noteNode.attrs, [
+      schema.nodes.paragraph.create({}, []),
+    ]);
+    const separatorNode = schema.nodes.separator.create();
+    const afterNode = schema.nodes.note.create({ id: nanoid(10) }, [
+      schema.nodes.paragraph.create({}, []),
+    ]);
 
-    tr.delete(start - 1, end + 1);
+    const preparedFragment = Fragment.from([
+      beforeNode,
+      separatorNode,
+      afterNode,
+    ]);
+    const preparedSlice = new Slice(preparedFragment, 2, 2);
 
     console.log(
-      "replace",
-      stepMap,
-      stepMap.map(notePos + 1),
-      // @ts-ignore
-      stepMap.map(notePos + noteNode.nodeSize - 2),
+      "slice",
+      beforeNode,
+      beforeNode.nodeSize,
+      separatorNode,
+      separatorNode.nodeSize,
+      afterNode,
+      afterNode.nodeSize,
+      preparedFragment,
+      preparedSlice,
     );
 
-    // let newNode = schema.nodes.note.create(noteNode.attrs, contentAbove);
-    // tr.replaceWith(notePos!, notePos + noteNode.nodeSize - 1, newNode);
-
-    tr.replace(
-      // @ts-ignore
-      stepMap.map(notePos + 1),
-      // @ts-ignore
-      stepMap.map(notePos + noteNode.nodeSize - 2),
-      new Slice(contentAbove, 0, 0),
-    );
-
-    const separatorNode = schema.nodes.separator.create();
-    // @ts-ignore
-    tr.insert(stepMap.map(notePos + noteNode.nodeSize), separatorNode);
-
-    const newNoteNode = schema.nodes.note.create(
-      { id: nanoid(10) },
-      contentBelow,
-    );
-    // @ts-ignore
-    tr.insert(stepMap.map(notePos + noteNode.nodeSize), newNoteNode);
-
-    let selection = TextSelection.create(
-      tr.doc,
-      // @ts-ignore
-      stepMap.map(end + 1),
-      // @ts-ignore
-      stepMap.map(end + 1),
-    );
-    tr.setSelection(selection);
+    tr.replace(start - 2, end + 2, preparedSlice);
 
     return tr;
   });
@@ -130,9 +120,12 @@
 
     separator: {
       // group: "block",
-      parseDOM: [{ tag: "hr" }],
+      attrs: {
+        class: { default: "separator" },
+      },
+      parseDOM: [{ tag: "hr.separator" }],
       toDOM() {
-        return ["hr"];
+        return ["hr", { class: "separator" }];
       },
     } satisfies NodeSpec,
 
@@ -234,3 +227,9 @@
   onSubmit={handleAutocompleteSubmit}
   action={autocompleteAction}
 />
+
+<style lang="postcss">
+  :global(.separator) {
+    @apply mt-1 pb-1;
+  }
+</style>
