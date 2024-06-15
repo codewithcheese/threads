@@ -58,6 +58,7 @@
     "lucide-svelte": "^0.378.0",
     "nanoid": "^5.0.7",
     "prosemirror-autocomplete": "^0.4.3",
+    "prosemirror-changeset": "^2.2.1",
     "prosemirror-commands": "^1.5.2",
     "prosemirror-history": "^1.4.0",
     "prosemirror-inputrules": "^1.4.0",

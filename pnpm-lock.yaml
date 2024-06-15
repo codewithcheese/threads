@@ -71,6 +71,9 @@ dependencies:
   prosemirror-autocomplete:
     specifier: ^0.4.3
     version: 0.4.3
+  prosemirror-changeset:
+    specifier: ^2.2.1
+    version: 2.2.1
   prosemirror-commands:
     specifier: ^1.5.2
     version: 1.5.2
@@ -3936,6 +3939,12 @@ packages:
       prosemirror-inputrules: 1.4.0
       prosemirror-state: 1.4.3
       prosemirror-view: 1.33.6
+    dev: false
+
+  /prosemirror-changeset@2.2.1:
+    resolution: {integrity: sha512-J7msc6wbxB4ekDFj+n9gTW/jav/p53kdlivvuppHsrZXCaQdVgRghoZbSS3kwrRyAstRVQ4/+u5k7YfLgkkQvQ==}
+    dependencies:
+      prosemirror-transform: 1.9.0
     dev: false
 
   /prosemirror-commands@1.5.2:

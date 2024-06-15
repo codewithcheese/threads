@@ -25,7 +25,7 @@ export class SvelteNodeView implements NodeView {
     if (node.attrs.className) {
       this.dom.className = node.attrs.className;
     }
-    this.setProps();
+    this.props = { ...this.node.attrs, selected: this.selected };
     this.setDataAttrs();
     this.mounted = mount(component, {
       target: this.dom,
@@ -39,31 +39,25 @@ export class SvelteNodeView implements NodeView {
     }
   }
 
-  setProps() {
-    this.props = { ...this.node.attrs, selected: this.selected };
-  }
-
   update(node: Node) {
     if (node.type !== this.node.type) {
       return false;
     }
 
     this.node = node;
-    this.setProps();
+    this.props = Object.assign(this.props, this.node.attrs);
 
     return true;
   }
 
   selectNode() {
-    console.log("selectNode");
-    // this.selected = true;
-    // this.setProps();
+    console.log("selectNode", this.node);
+    this.props.selected = true;
   }
 
   deselectNode() {
-    console.log("deselectNode");
-    // this.selected = false;
-    // this.setProps();
+    console.log("deselectNode", this.node);
+    this.props.selected = false;
   }
 
   setSelection(anchor: number, head: number, root: Document | ShadowRoot) {

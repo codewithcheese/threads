@@ -1,7 +1,10 @@
 <script lang="ts">
   import { HashIcon } from "lucide-svelte";
+  import { cn } from "$lib/utils";
 
-  let { value = "Hello word" } = $props();
+  let { value, selected }: { value: string; selected: boolean } = $props();
+
+  $inspect("tag", value, selected);
 
   function handleClick() {
     console.log("click");
@@ -9,7 +12,10 @@
 </script>
 
 <button
-  class="mx-0.5 flex cursor-pointer flex-row items-center space-x-1 rounded bg-purple-50 px-1 hover:bg-purple-200"
+  class={cn(
+    "mx-0.5 flex cursor-pointer flex-row items-center space-x-1 rounded bg-purple-50 px-1 hover:bg-purple-200",
+    selected && "bg-purple-200",
+  )}
   onclick={handleClick}
 >
   <span class="flex flex-row items-center">
