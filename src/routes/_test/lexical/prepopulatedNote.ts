@@ -8,7 +8,7 @@
 import { $createParagraphNode, $createTextNode, $getRoot } from "lexical";
 import { $createNoteNode } from "./plugins/note/NoteNode";
 import { nanoid } from "nanoid";
-import { $createTagNode } from "./plugins/tag/TagNode";
+import { $createTagNode } from "./plugins/tag/TagNode.svelte";
 
 export default function $prepopulatedRichText() {
   const root = $getRoot();

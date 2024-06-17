@@ -6,6 +6,7 @@ import {
   type Spread,
 } from "lexical";
 import Tag from "./Tag.svelte";
+import { unmount } from "svelte";
 
 export type SerializedTagNode = Spread<
   {
@@ -19,21 +20,23 @@ type TagDecorator = {
   props: { name: string };
 };
 
-export class TagNode extends DecoratorNode<TagDecorator> {
+export class TagNodeSvelte extends DecoratorNode<TagDecorator> {
   __name: string;
+  __props: { name: string } = $state({ name: "" });
   __selected: boolean;
 
   static getType() {
     return "tag";
   }
 
-  static clone(node: TagNode) {
-    return new TagNode(node.__name, node.__key);
+  static clone(node: TagNodeSvelte) {
+    return new TagNodeSvelte(node.__name, node.__key);
   }
 
   constructor(name: string, key?: string) {
     super(key);
     this.__name = name;
+    this.__props = { name };
     this.__selected = false;
   }
 
@@ -43,21 +46,20 @@ export class TagNode extends DecoratorNode<TagDecorator> {
     return dom;
   }
 
-  updateDOM(prevNode: TagNode) {
+  updateDOM(prevNode: TagNodeSvelte) {
     return false;
   }
 
   decorate(editor: LexicalEditor, config: EditorConfig) {
+    this.__props.name = this.__name;
     return {
       component: Tag,
-      props: {
-        name: this.__name,
-      },
+      props: this.__props,
     };
   }
 
-  static importJSON(serializedNode: SerializedTagNode): TagNode {
-    return $createTagNode(serializedNode.name);
+  static importJSON(serializedNode: SerializedTagNode): TagNodeSvelte {
+    return createTagNode(serializedNode.name);
   }
 
   exportJSON(): SerializedTagNode {
@@ -70,14 +72,15 @@ export class TagNode extends DecoratorNode<TagDecorator> {
 
   remove(preserveEmptyParent?: boolean) {
     super.remove(preserveEmptyParent);
-    console.log("remove", this.__name);
   }
 }
 
-export function $createTagNode(message: string) {
-  return new TagNode(message);
+function createTagNode(message: string) {
+  return new TagNodeSvelte(message);
 }
 
-export function $isTagNode(node: any) {
-  return node instanceof TagNode;
+function isTagNode(node: any) {
+  return node instanceof TagNodeSvelte;
 }
+
+export { createTagNode as $createTagNode, isTagNode as $isTagNode };
