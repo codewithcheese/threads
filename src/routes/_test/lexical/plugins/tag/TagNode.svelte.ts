@@ -6,7 +6,6 @@ import {
   type Spread,
 } from "lexical";
 import Tag from "./Tag.svelte";
-import { unmount } from "svelte";
 
 export type SerializedTagNode = Spread<
   {

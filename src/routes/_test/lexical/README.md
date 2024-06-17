@@ -1,6 +1,9 @@
 - [ ] split note nodes with `---` hr
 - [ ] hash commands
 - [ ] slash commands
+
+---
+
 - [ ] use Svelte components to render lexical nodes
   - unmount component when node is deleted
 - [ ] select note node

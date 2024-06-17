@@ -50,6 +50,7 @@
     "@lexical/dragon": "^0.16.0",
     "@lexical/history": "^0.16.0",
     "@lexical/rich-text": "^0.16.0",
+    "@lexical/text": "^0.16.0",
     "@lexical/utils": "^0.16.0",
     "@sindresorhus/slugify": "^2.2.1",
     "@tailwindcss/typography": "^0.5.13",

@@ -4,7 +4,11 @@
   import { createEmptyHistoryState, registerHistory } from "@lexical/history";
   import { HeadingNode, QuoteNode, registerRichText } from "@lexical/rich-text";
   import { mergeRegister } from "@lexical/utils";
-  import { createEditor, $getNodeByKey as getNodeByKey } from "lexical";
+  import {
+    $getNodeByKey as getNodeByKey,
+    createEditor,
+    type LexicalEditor,
+  } from "lexical";
 
   import _$prepopulatedNote from "./prepopulatedNote";
   // import prepopulatedRichText from "./prepopulatedRichText";
@@ -14,11 +18,20 @@
   import { NoteNode } from "./plugins/note/NoteNode";
   import { registerNote } from "./plugins/note/NotePlugin";
   import { TagNodeSvelte } from "./plugins/tag/TagNode.svelte";
+  import { type Mention } from "./plugins/mention/MentionPlugin";
+  import TagMenu from "./plugins/TagMenu.svelte";
 
   const initialConfig = {
     namespace: "Vanilla JS Demo",
     // Register nodes specific for @lexical/rich-text
-    nodes: [HeadingNode, QuoteNode, EmojiNode, NoteNode, TagNodeSvelte],
+    nodes: [
+      HeadingNode,
+      QuoteNode,
+      EmojiNode,
+      NoteNode,
+      TagNodeSvelte,
+      // MentionNode,
+    ],
     onError: (error: Error) => {
       throw error;
     },
@@ -30,14 +43,28 @@
 
   let editorRef: HTMLDivElement;
   let stateRef: HTMLTextAreaElement;
+  let editor: LexicalEditor;
 
   let mounted = new WeakMap<any, any>();
 
+  const mentions: Mention[] = [
+    {
+      trigger: "@",
+      name: "mention",
+    },
+    {
+      trigger: "#",
+      name: "tag",
+    },
+  ];
+
   onMount(() => {
-    const editor = createEditor(initialConfig);
+    console.log("lexical page onMount");
+    editor = createEditor(initialConfig);
     editor.setRootElement(editorRef!);
 
     mergeRegister(
+      // registerMention(editor, mentions),
       registerNote(editor),
       registerEmoji(editor),
       registerRichText(editor),
@@ -81,6 +108,9 @@
 
 <div bind:this={editorRef} contenteditable="true"></div>
 <textarea bind:this={stateRef}></textarea>
+{#if editor}
+  <TagMenu {editor} />
+{/if}
 
 <style lang="postcss">
   /*:global(.separator) {*/
@@ -88,5 +118,8 @@
   /*}*/
   :global(.note-node) {
     @apply mb-2 border-b border-gray-200 pb-2;
+  }
+  :global(.mention) {
+    @apply rounded-sm bg-purple-500 px-1 py-0.5 text-purple-200;
   }
 </style>

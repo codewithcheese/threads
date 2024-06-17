@@ -47,6 +47,9 @@ dependencies:
   '@lexical/rich-text':
     specifier: ^0.16.0
     version: 0.16.0
+  '@lexical/text':
+    specifier: ^0.16.0
+    version: 0.16.0
   '@lexical/utils':
     specifier: ^0.16.0
     version: 0.16.0
@@ -1640,6 +1643,12 @@ packages:
     resolution: {integrity: sha512-A66K779kxdr0yH2RwT2itsMnkzyFLFNPXyiWGLobCH8ON4QPuBouZvjbRHBe8Pe64yJ0c1bRDxSbTqUi9Wt3Gg==}
     dependencies:
       '@lexical/utils': 0.16.0
+      lexical: 0.16.0
+    dev: false
+
+  /@lexical/text@0.16.0:
+    resolution: {integrity: sha512-9ilaOhuNIIGHKC8g8j3K/mEvJ09af9B6RKbm3GNoRcf/WNHD4dEFWNTEvgo/3zCzAS8EUBI6UINmfQQWlMjdIQ==}
+    dependencies:
       lexical: 0.16.0
     dev: false
 
