@@ -68,3 +68,7 @@ export class NoteNode extends ElementNode {
 export function $createNoteNode(id: string) {
   return new NoteNode(id);
 }
+
+export function $isNoteNode(node: any): node is NoteNode {
+  return node instanceof NoteNode;
+}

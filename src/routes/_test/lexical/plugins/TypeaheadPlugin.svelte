@@ -4,11 +4,11 @@
     $isRangeSelection as isRangeSelection,
     $isTextNode as isTextNode,
     type LexicalEditor,
-    type RangeSelection,
   } from "lexical";
   import { mergeRegister } from "@lexical/utils";
   import { onMount } from "svelte";
   import type { MenuResolution, TriggerFn } from "./Typeahead";
+  import { getTextUpToAnchor } from "../utils/anchor";
 
   type Props = {
     editor: LexicalEditor;
@@ -25,19 +25,6 @@
 
   function openTypeahead(res: MenuResolution) {
     onOpen(res);
-  }
-
-  function getTextUpToAnchor(selection: RangeSelection): string | null {
-    const anchor = selection.anchor;
-    if (anchor.type !== "text") {
-      return null;
-    }
-    const anchorNode = anchor.getNode();
-    if (!anchorNode.isSimpleText()) {
-      return null;
-    }
-    const anchorOffset = anchor.offset;
-    return anchorNode.getTextContent().slice(0, anchorOffset);
   }
 
   function tryToPositionRange(
